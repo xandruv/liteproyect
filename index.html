@@ -129,12 +129,6 @@ input[type=date].fin{font-weight:500}
 .loading{padding:60px 20px;text-align:center;color:var(--muted)}
 .section-h{display:flex;justify-content:space-between;align-items:center;margin:26px 0 10px;gap:10px}
 .section-h h2{font-size:17px}
-.upc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:24px;overflow:hidden}
-.urow{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line)}
-.urow:last-child{border-bottom:0}
-.urow .ut{flex:1;min-width:0;cursor:pointer}
-.urow .ut b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.urow .ut small{color:var(--muted);font-size:12.5px}
 .footer-tools{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
 /* project */
 .phead{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
@@ -298,6 +292,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none}
 .wcard.late{box-shadow:inset 3px 0 0 var(--danger)}
 .wcard.today{box-shadow:inset 3px 0 0 var(--accent)}
 .wcard.done .wc-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
+.upc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.upc-grid .wcard{border-color:var(--line)}
+.wc-proj{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;max-width:100%;border:0;background:var(--surface-2);border-radius:7px;padding:3px 8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.wc-proj:hover{color:var(--ink);background:var(--line)}
+.wc-proj svg{width:13px;height:13px;color:var(--accent)}
+.wc-proj span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wc-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .wc-title{font-weight:700;cursor:pointer;word-break:break-word}
 .wc-desc{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
@@ -409,6 +409,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none}
 <div id="modal-root"></div>
 <div id="toast"></div>
 <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+<input type="file" id="xlsxFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
 <datalist id="units"><option>ud</option><option>m</option><option>m²</option><option>m³</option><option>ml</option><option>kg</option><option>g</option><option>l</option><option>saco</option><option>caja</option><option>paquete</option><option>rollo</option><option>bote</option><option>tubo</option><option>par</option><option>juego</option><option>hoja</option><option>tablero</option><option>palé</option></datalist>
 <script type="module">
 /* LiteProyect PWA · datos en Firebase (tu cuenta de Google), con funcionamiento sin conexión */
@@ -892,16 +893,17 @@ function upcoming(projects) {
   if (!rows.length) return "";
   const ord = { late: 0, today: 1, soon: 2 };
   rows.sort((a, b) => ord[a.u] - ord[b.u] || (wRange(a.w)[0] || "").localeCompare(wRange(b.w)[0] || ""));
+  const max = S.ui.upcAll ? rows.length : 6;
   return `<div class="section-h"><h2>Próximos trabajos</h2><span class="muted" style="font-size:13px">Atrasados, de hoy y de los próximos 7 días</span></div>
-  <div class="upc">${rows.slice(0, 8).map(({ p, w, u }) => `<div class="urow">
-    <div class="wseg">${statusSeg(p.id, w)}</div>
-    <div class="ut" data-act="open-works" data-id="${p.id}"><b>${esc(w.title)}</b><small>${esc(p.name)}${w.tags.length ? " · " + w.tags.map(esc).join(", ") : ""}</small></div>
-    ${workDate(w, u)}</div>`).join("")}
-    ${rows.length > 8 ? `<div class="urow"><span class="muted" style="font-size:13px">Y ${rows.length - 8} más en los tableros de trabajos de cada proyecto.</span></div>` : ""}</div>
+  <div class="upc-grid">${rows.slice(0, max).map(({ p, w }) => workCard(p, w, { q: "" }, true)).join("")}</div>
+  ${rows.length > 6 ? `<div style="text-align:center;margin-top:10px"><button class="link" data-act="upc-all">${S.ui.upcAll ? "Ver menos" : `Ver los ${rows.length} trabajos`}</button></div>` : ""}
   <div class="section-h"><h2>Proyectos</h2></div>`;
 }
 function footerTools() {
-  return `<div class="footer-tools"><span>Copia de seguridad:</span>
+  return `<div class="footer-tools"><span>Gastos de todos los proyectos:</span>
+    <button class="btn sm" data-act="xlsx-export">${ic("download")}Exportar Excel</button>
+    <button class="btn sm" data-act="xlsx-import">${ic("upload")}Importar Excel</button></div>
+  <div class="footer-tools" style="margin-top:10px;border-top:0;padding-top:0"><span>Copia de seguridad:</span>
     <button class="btn sm" data-act="backup-export">${ic("download")}Exportar todo (.json)</button>
     <button class="btn sm" data-act="backup-import">${ic("upload")}Importar copia</button></div>`;
 }
@@ -1055,12 +1057,14 @@ function worksTab(p) {
   };
   return tb + quick + highlights + filters + `<div class="board">${col("pendiente")}${col("curso")}${col("hecho")}</div>`;
 }
-function workCard(p, w, f) {
+function workCard(p, w, f, home = false) {
   const u = wUrgency(w, today()), q = norm(f.q);
+  const edit = home ? `data-act="work-edit-any" data-id="${p.id}|${w.id}"` : `data-act="work-edit" data-id="${w.id}"`;
   return `<div class="wcard ${u} ${w.status === "hecho" ? "done" : ""}">
+    ${home ? `<button class="wc-proj" data-act="open-works" data-id="${p.id}" title="Abrir el tablero de trabajos del proyecto">${ic("folder")}<span>${esc(p.name)}</span></button>` : ""}
     <div class="wc-top">${workDate(w, u)}${w.recur ? `<span class="rec" title="Se repite cada ${plural(w.recur.n, RECUR[w.recur.u][0], RECUR[w.recur.u][1])}">${ic("repeat")}</span>` : ""}</div>
-    <div class="wc-title" data-act="work-edit" data-id="${w.id}">${hl(w.title, q)}</div>
-    ${w.description ? `<div class="wc-desc" data-act="work-edit" data-id="${w.id}">${hl(w.description, q)}</div>` : ""}
+    <div class="wc-title" ${edit}>${hl(w.title, q)}</div>
+    ${w.description ? `<div class="wc-desc" ${edit}>${hl(w.description, q)}</div>` : ""}
     ${w.tags.length ? `<div class="wc-tags">${w.tags.map(t => `<span class="tag ${tagClass(t)}">${esc(t)}</span>`).join("")}</div>` : ""}
     <div class="wc-foot"><span class="wc-task">${w.taskId ? esc(taskPath(p, w.taskId)) : ""}</span><div class="wseg">${statusSeg(p.id, w)}</div></div>
   </div>`;
@@ -1082,7 +1086,8 @@ function costsTab(p) {
   const f = costF(p.id);
   const active = f.task || f.from || f.to || f.q || f.origin;
   const tb = `<div class="toolbar"><h2>Costes</h2><div class="tb-actions">
-    ${p.costs.length ? `<button class="btn sm" data-act="costs-export">${ic("download")}CSV</button>` : ""}
+    <button class="btn sm" data-act="xlsx-export" title="Descargar los gastos del proyecto en Excel (también sirve de plantilla)">${ic("download")}Excel</button>
+    <button class="btn sm" data-act="xlsx-import" title="Importar gastos desde un Excel">${ic("upload")}Importar Excel</button>
     <button class="btn primary sm" data-act="cost-new">${ic("plus")}Añadir gasto</button></div></div>`;
   if (!p.costs.length) return tb + `<div class="empty"><h3>Sin gastos registrados</h3><p>Registra facturas y tickets, o compra elementos desde la lista de acopio.</p><button class="btn primary" data-act="cost-new">${ic("plus")}Añadir gasto</button></div>`;
   const filters = `<div class="filters">
@@ -1574,6 +1579,345 @@ function setWorkStatus(p, w, st) {
   w.status = st;
 }
 
+/* =========================================================
+   Excel (.xlsx) sin librerías externas: escritura y lectura
+   ========================================================= */
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const d = new Date();
+  const dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  for (const f of files) {
+    const name = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, tm, true); h.setUint16(12, dt, true); h.setUint32(14, crc, true);
+    h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, tm, true); c.setUint16(14, dt, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((a, b) => a + b.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdSize, true); e.setUint32(16, off, true);
+  const all = [...parts, ...central, new Uint8Array(e.buffer)];
+  const out = new Uint8Array(all.reduce((a, b) => a + b.length, 0)); let p = 0;
+  all.forEach(b => { out.set(b, p); p += b.length; });
+  return out;
+}
+const xesc = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const colName = i => { let s = ""; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+const XL_EPOCH = Date.UTC(1899, 11, 30);
+const isoToSerial = s => { const [y, m, d] = s.split("-").map(Number); return (Date.UTC(y, m - 1, d) - XL_EPOCH) / 86400000; };
+const serialToIso = n => { const d = new Date(XL_EPOCH + Math.floor(n + 1e-7) * 86400000); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`; };
+/* Estilos: 1 fecha, 2 euros, 3 cabecera, 4 número, 5 texto ajustado */
+const XL_STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0.00\\ &quot;€&quot;"/><numFmt numFmtId="166" formatCode="#,##0.###"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1C1E1B"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="166" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+function sheetXml(rows, opt = {}) {
+  const ncols = Math.max(1, ...rows.map(r => r.length));
+  let x = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`;
+  x += `<dimension ref="A1:${colName(ncols - 1)}${Math.max(1, rows.length)}"/>`;
+  x += opt.freeze ? `<sheetViews><sheetView workbookViewId="0"${opt.first ? ' tabSelected="1"' : ""}><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"${opt.first ? ' tabSelected="1"' : ""}/></sheetViews>`;
+  x += `<sheetFormatPr defaultRowHeight="15"/>`;
+  if (opt.widths) x += "<cols>" + opt.widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("") + "</cols>";
+  x += "<sheetData>";
+  rows.forEach((row, r) => {
+    x += `<row r="${r + 1}">`;
+    row.forEach((cell, c) => {
+      const o = cell !== null && typeof cell === "object" ? cell : { v: cell };
+      if (o.v == null || o.v === "") return;
+      const ref = colName(c) + (r + 1), s = o.s ? ` s="${o.s}"` : "";
+      if (typeof o.v === "number") { if (isFinite(o.v)) x += `<c r="${ref}"${s}><v>${o.v}</v></c>`; }
+      else x += `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xesc(o.v)}</t></is></c>`;
+    });
+    x += "</row>";
+  });
+  x += "</sheetData>";
+  if (opt.filter) x += `<autoFilter ref="A1:${colName(ncols - 1)}${Math.max(1, rows.length)}"/>`;
+  return x + `<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>`;
+}
+function xlsxFile(sheets) {
+  const NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const defs = sheets.map((s, i) => s.filter ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${s.name}'!$A$1:$${colName(Math.max(1, ...s.rows.map(r => r.length)) - 1)}$${Math.max(1, s.rows.length)}</definedName>` : "").join("");
+  const files = [
+    { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
+    { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+    { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook ${NS}><bookViews><workbookView/></bookViews><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets>${defs ? `<definedNames>${defs}</definedNames>` : ""}</workbook>` },
+    { name: "xl/_rels/workbook.xml.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { name: "xl/styles.xml", data: XL_STYLES },
+    ...sheets.map((s, i) => ({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(s.rows, { ...s, first: i === 0 }) }))
+  ];
+  return zipStore(files);
+}
+/* ---- Lectura ---- */
+const xdec = s => s.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (m, e) => {
+  e = e.toLowerCase(); if (e[0] === "#") return String.fromCodePoint(e[1] === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10));
+  return { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" }[e];
+}).replace(/_x([0-9A-Fa-f]{4})_/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+const xattr = (s, n) => { const m = new RegExp("(?:^|\\s)" + n + '\\s*=\\s*"([^"]*)"').exec(s || ""); return m ? xdec(m[1]) : null; };
+const xtext = b => { let t = ""; String(b || "").replace(/<rPh\b[\s\S]*?<\/rPh>/g, "").replace(/<t\b[^>]*\/>/g, "").replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g, (m, x) => { t += xdec(x); return ""; }); return t; };
+async function unzipEntries(buf) {
+  const u = new Uint8Array(buf), dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
+  let e = -1;
+  for (let i = u.length - 22; i >= Math.max(0, u.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error("El archivo no es un Excel (.xlsx) válido.");
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const dec = new TextDecoder(), ent = {};
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), loff = dv.getUint32(p + 42, true);
+    ent[dec.decode(u.subarray(p + 46, p + 46 + nlen))] = { method, csize, loff };
+    p += 46 + nlen + xlen + clen;
+  }
+  return async name => {
+    const f = ent[name]; if (!f) return null;
+    const ln = dv.getUint16(f.loff + 26, true), lx = dv.getUint16(f.loff + 28, true);
+    const data = u.subarray(f.loff + 30 + ln + lx, f.loff + 30 + ln + lx + f.csize);
+    if (f.method === 0) return dec.decode(data);
+    if (f.method !== 8) throw new Error("Formato de compresión no compatible.");
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return dec.decode(new Uint8Array(await new Response(stream).arrayBuffer()));
+  };
+}
+function parseSheetXml(x, ss) {
+  const rows = [];
+  x.replace(/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g, (m, ra, body) => {
+    const rn = parseInt(xattr(ra, "r"), 10) || rows.length + 1; const row = [];
+    if (body) body.replace(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g, (m2, ca, cb) => {
+      const ref = xattr(ca, "r"); let ci = row.length;
+      if (ref) { ci = 0; for (const ch of ref.replace(/\d+/g, "").toUpperCase()) ci = ci * 26 + (ch.charCodeAt(0) - 64); ci--; }
+      const t = xattr(ca, "t") || "n"; let v = null; cb = cb || "";
+      if (t === "inlineStr") v = xtext(cb.replace(/<\/?is>/g, ""));
+      else {
+        const vm = /<v>([\s\S]*?)<\/v>/.exec(cb); const raw = vm ? xdec(vm[1]) : null;
+        if (raw != null) {
+          if (t === "s") v = ss[parseInt(raw, 10)] ?? "";
+          else if (t === "b") v = raw === "1";
+          else if (t === "e") v = "";
+          else if (t === "str" || t === "d") v = raw;
+          else { const nn = Number(raw); v = isFinite(nn) ? nn : raw; }
+        }
+      }
+      row[ci] = v; return "";
+    });
+    rows[rn - 1] = row; return "";
+  });
+  for (let i = 0; i < rows.length; i++) if (!rows[i]) rows[i] = [];
+  return rows;
+}
+async function readXlsx(buf) {
+  const read = await unzipEntries(buf);
+  const wb = await read("xl/workbook.xml"); if (!wb) throw new Error("El archivo no es un Excel (.xlsx) válido.");
+  const rels = {};
+  (await read("xl/_rels/workbook.xml.rels") || "").replace(/<Relationship\b([^>]*)>/g, (m, a) => { rels[xattr(a, "Id")] = xattr(a, "Target"); return ""; });
+  const ss = [];
+  const ssX = await read("xl/sharedStrings.xml");
+  if (ssX) ssX.replace(/<si>([\s\S]*?)<\/si>|<si\/>/g, (m, b) => { ss.push(b ? xtext(b) : ""); return ""; });
+  const sheets = {}, names = [];
+  const list = []; wb.replace(/<sheet\b([^>]*)>/g, (m, a) => { list.push({ name: xattr(a, "name"), rid: xattr(a, "r:id") }); return ""; });
+  for (const sh of list) {
+    let t = rels[sh.rid]; if (!t) continue;
+    t = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, "");
+    const x = await read(t); if (x == null) continue;
+    sheets[sh.name] = parseSheetXml(x, ss); names.push(sh.name);
+  }
+  return { names, sheets };
+}
+
+/* ---- Gastos en Excel: exportar / importar ---- */
+const XL_HEAD = ["ID", "Proyecto", "Fecha", "Concepto", "Importe (€)", "Nº documento", "Tarea", "Elemento de acopio", "Cantidad", "Unidad", "Precio unitario (€)"];
+const XL_HELP = [
+  "Hoja «Gastos»: una fila por gasto. Puedes modificar filas, añadir filas nuevas y volver a importar el archivo en LiteProyect.",
+  "ID: no lo cambies. Identifica cada gasto para poder actualizarlo. Déjalo vacío en los gastos nuevos.",
+  "Proyecto: nombre exacto del proyecto. Si importas desde dentro de un proyecto, puede quedar vacío.",
+  "Fecha (obligatoria): fecha de Excel o texto con formato dd/mm/aaaa.",
+  "Importe (obligatorio): en euros. En las compras de acopio puede dejarse vacío si indicas Cantidad y Precio unitario.",
+  "Concepto y Nº documento (factura, ticket, albarán…): opcionales.",
+  "Tarea (opcional): copia el valor de la hoja «Tareas». También vale solo el nombre de la tarea si no se repite en el proyecto.",
+  "Elemento de acopio: rellénalo solo si el gasto es una compra de un elemento de la lista de acopio (ver hoja «Acopio»). Si no existe, se creará en la raíz de la lista. Requiere Cantidad.",
+  "Cantidad y Unidad: unidades compradas. Si las compras superan la cantidad necesaria del elemento, esta se actualizará automáticamente.",
+  "Al importar verás un resumen de altas, cambios y errores antes de aplicar nada. Opcionalmente puedes eliminar los gastos que no estén en el archivo.",
+  "Las hojas «Tareas» y «Acopio» son solo de consulta: los cambios que hagas en ellas no se importan."
+];
+function buildCostsXlsx(projects) {
+  const H = h => h.map(v => ({ v, s: 3 }));
+  const G = [H(XL_HEAD)], T = [H(["Proyecto", "Tarea (valor para la columna «Tarea»)", "Descripción", "Estado"])];
+  const A = [H(["Proyecto", "Elemento (valor para «Elemento de acopio»)", "Unidad", "Necesario", "Comprado", "Pendiente", "Precio previsto (€)"])];
+  projects.forEach(p => {
+    const items = new Map(p.items.map(i => [i.id, i]));
+    p.costs.slice().sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.createdAt || 0) - (b.createdAt || 0)).forEach(c => {
+      const it = c.itemId ? items.get(c.itemId) : null;
+      G.push([c.id, p.name, c.date ? { v: isoToSerial(c.date), s: 1 } : "", c.concept, { v: c.amount, s: 2 }, c.docNumber,
+        c.taskId ? taskPath(p, c.taskId) : "", it ? it.name : "", it && c.qty != null ? { v: c.qty, s: 4 } : "", it ? it.unit : "",
+        it && c.unitPrice != null ? { v: c.unitPrice, s: 2 } : ""]);
+    });
+    const walk = pid => kidsOf(p, pid).forEach(t => { T.push([p.name, taskPath(p, t.id), t.description, TSTATUS[t.status]]); walk(t.id); });
+    walk(null);
+    p.items.slice().sort(byName).forEach(i => { const s = itemState(p, i); A.push([p.name, i.name, i.unit, { v: i.qtyNeeded, s: 4 }, { v: s.acq, s: 4 }, { v: s.pend, s: 4 }, i.estPrice != null ? { v: i.estPrice, s: 2 } : ""]); });
+  });
+  return xlsxFile([
+    { name: "Gastos", rows: G, widths: [15, 24, 12, 40, 13, 16, 34, 30, 10, 9, 17], freeze: true, filter: true },
+    { name: "Tareas", rows: T, widths: [24, 44, 50, 12], freeze: true, filter: true },
+    { name: "Acopio", rows: A, widths: [24, 40, 9, 11, 11, 11, 18], freeze: true, filter: true },
+    { name: "Instrucciones", rows: [[{ v: "Cómo usar este archivo", s: 3 }], ...XL_HELP.map(l => [{ v: l, s: 5 }])], widths: [120] }
+  ]);
+}
+function exportCostsXlsx() {
+  const one = S.view.name === "project" ? P() : null;
+  const projects = one ? [one] : Object.values(S.projects).sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const bytes = buildCostsXlsx(projects);
+  if (saveFile(`gastos-${one ? slugify(one.name) : "todos"}-${today()}.xlsx`, bytes, XLSX_MIME)) toast("Excel descargado");
+}
+/* Lectura de valores de celda */
+function xlDate(v) {
+  if (typeof v === "number" && isFinite(v) && v > 0) return serialToIso(v);
+  const s = String(v ?? "").trim(); if (!s) return null;
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s), y, mo, d;
+  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/.exec(s))) { d = +m[1]; mo = +m[2]; y = +m[3]; if (y < 100) y += 2000; }
+  else return null;
+  const dt = new Date(y, mo - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === mo - 1 && dt.getDate() === d ? iso(dt) : null;
+}
+const xlNum = v => typeof v === "number" ? v : parseNum(v);
+const xlStr = v => v == null ? "" : typeof v === "number" ? String(round(v, 6)) : String(v).trim();
+function matchTask(p, value) {
+  const parts = String(value).split(/\s*[›>\/]\s*/).map(norm).filter(Boolean);
+  if (!parts.length) return { id: null };
+  const byPath = p.tasks.filter(t => { const path = taskPath(p, t.id).split(" › ").map(norm); return path.length === parts.length && path.every((x, i) => x === parts[i]); });
+  if (byPath.length === 1) return { id: byPath[0].id };
+  const last = parts[parts.length - 1];
+  const byName = p.tasks.filter(t => norm(t.title) === last);
+  if (byName.length === 1 && parts.length === 1) return { id: byName[0].id };
+  if (byName.length > 1 || byPath.length > 1) return { error: `la tarea «${value}» es ambigua: usa la ruta completa de la hoja «Tareas»` };
+  return { error: `la tarea «${value}» no existe en el proyecto` };
+}
+function planCostsImport(rows, scopePid) {
+  const hi = rows.slice(0, 15).findIndex(r => r.some(c => norm(xlStr(c)).startsWith("fecha")) && r.some(c => norm(xlStr(c)).startsWith("importe")));
+  if (hi < 0) throw new Error("No se encuentra la fila de cabecera (debe tener al menos las columnas «Fecha» e «Importe»).");
+  const col = {};
+  rows[hi].forEach((h, i) => {
+    const n = norm(xlStr(h)); if (!n) return;
+    const set = k => { if (col[k] == null) col[k] = i; };
+    if (n === "id") set("id"); else if (n.startsWith("proyecto")) set("proj"); else if (n.startsWith("fecha")) set("date");
+    else if (n.startsWith("concepto")) set("concept"); else if (n.startsWith("importe")) set("amount");
+    else if (n.includes("documento") || n.startsWith("factura")) set("doc"); else if (n.startsWith("tarea")) set("task");
+    else if (n.includes("elemento") || n.includes("acopio")) set("item"); else if (n.startsWith("cantidad")) set("qty");
+    else if (n.startsWith("unidad")) set("unit"); else if (n.startsWith("precio")) set("price");
+  });
+  const scope = scopePid ? getP(scopePid) : null;
+  const byName = new Map(); Object.values(S.projects).forEach(p => { const k = norm(p.name); byName.set(k, byName.has(k) ? "dup" : p); });
+  const plans = new Map(), errors = []; let skipped = 0, read = 0;
+  const planOf = p => { if (!plans.has(p.id)) plans.set(p.id, { p, creates: [], updates: [], same: 0, newItems: new Map(), seen: new Set(), errs: 0 }); return plans.get(p.id); };
+  const get = (r, k) => col[k] == null ? "" : r[col[k]];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i] || [], line = i + 1;
+    if (!r.some(c => xlStr(c) !== "")) continue;
+    read++;
+    const err = msg => errors.push({ line, msg });
+    /* proyecto */
+    let p; const pname = xlStr(get(r, "proj"));
+    if (scope) { if (pname && norm(pname) !== norm(scope.name)) { skipped++; continue; } p = scope; }
+    else {
+      if (!pname) { err("falta el nombre del proyecto"); continue; }
+      const f = byName.get(norm(pname));
+      if (!f) { err(`el proyecto «${pname}» no existe`); continue; }
+      if (f === "dup") { err(`hay varios proyectos llamados «${pname}»`); continue; }
+      p = f;
+    }
+    const plan = planOf(p);
+    const errP = msg => { plan.errs++; err(msg); };
+    /* campos */
+    const date = xlDate(get(r, "date")); if (!date) { errP("fecha vacía o no válida"); continue; }
+    const itemName = xlStr(get(r, "item"));
+    const qtyRaw = get(r, "qty"), priceRaw = get(r, "price"), amountRaw = get(r, "amount");
+    let qty = null, unitPrice = null, amount = xlStr(amountRaw) === "" ? NaN : xlNum(amountRaw);
+    if (itemName) {
+      qty = xlNum(qtyRaw); if (!(qty > 0)) { errP(`indica la cantidad comprada de «${itemName}»`); continue; }
+      const pr = xlStr(priceRaw) === "" ? NaN : xlNum(priceRaw);
+      if (!isFinite(amount) && isFinite(pr)) amount = pr * qty;
+    }
+    if (!isFinite(amount) || amount < 0) { errP("importe vacío o no válido"); continue; }
+    amount = round(amount); if (itemName) { qty = round(qty, 4); unitPrice = round(amount / qty, 4); }
+    let taskId = null; const tv = xlStr(get(r, "task"));
+    if (tv) { const mt = matchTask(p, tv); if (mt.error) { errP(mt.error); continue; } taskId = mt.id; }
+    let itemId = null, itemKey = null;
+    if (itemName) {
+      const found = p.items.filter(it => norm(it.name) === norm(itemName));
+      if (found.length > 1) { errP(`hay varios elementos de acopio llamados «${itemName}»`); continue; }
+      if (found.length) itemId = found[0].id;
+      else { itemKey = norm(itemName); if (!plan.newItems.has(itemKey)) plan.newItems.set(itemKey, { id: uid(), name: itemName, unit: xlStr(get(r, "unit")) || "ud" }); itemId = plan.newItems.get(itemKey).id; }
+    }
+    const fields = { date, amount, concept: xlStr(get(r, "concept")) || (itemName ? "Compra: " + itemName : "Gasto"), docNumber: xlStr(get(r, "doc")), taskId, itemId };
+    if (itemId) { fields.qty = qty; fields.unitPrice = unitPrice; }
+    /* alta o modificación */
+    const id = xlStr(get(r, "id"));
+    const cur = id ? p.costs.find(c => c.id === id) : null;
+    if (cur) {
+      if (plan.seen.has(id)) { errP("el ID está repetido en el archivo"); continue; }
+      plan.seen.add(id);
+      const same = cur.date === fields.date && round(cur.amount) === fields.amount && cur.concept === fields.concept && (cur.docNumber || "") === fields.docNumber
+        && (cur.taskId || null) === fields.taskId && (cur.itemId || null) === fields.itemId && (!fields.itemId || round(cur.qty, 4) === fields.qty);
+      if (same) plan.same++; else plan.updates.push({ id, fields });
+    } else plan.creates.push(fields);
+  }
+  /* Solo se ofrece borrar lo que falta si el proyecto no tiene filas con errores (evita borrados por filas mal escritas) */
+  plans.forEach(pl => { pl.deletes = pl.errs ? [] : pl.p.costs.filter(c => !pl.seen.has(c.id)).map(c => c.id); });
+  return { plans: [...plans.values()], errors, skipped, read };
+}
+function applyCostsImport(plan, withDeletes) {
+  if (!Store.canWrite()) return;
+  let n = 0, raised = 0;
+  plan.plans.forEach(pl => {
+    const p = getP(pl.p.id); if (!p) return;
+    const newIds = new Set([...pl.newItems.values()].map(it => it.id));
+    pl.newItems.forEach(it => p.items.push({ id: it.id, createdAt: Date.now(), name: it.name, description: "", qtyNeeded: 1, unit: it.unit, folderId: null, estPrice: null, taskId: null, url: "" }));
+    pl.creates.forEach(f => { p.costs.push({ id: uid(), createdAt: Date.now(), ...f }); n++; });
+    pl.updates.forEach(u => { const c = p.costs.find(x => x.id === u.id); if (!c) return; Object.assign(c, u.fields); if (!c.itemId) { delete c.qty; delete c.unitPrice; } n++; });
+    if (withDeletes && pl.deletes.length) { const del = new Set(pl.deletes); p.costs = p.costs.filter(c => !del.has(c.id)); n += del.size; }
+    p._rev++;
+    p.items.forEach(i => { const acq = round(sum(p.costs.filter(c => c.itemId === i.id).map(c => c.qty)), 4); if (newIds.has(i.id)) i.qtyNeeded = Math.max(acq, 1); else if (acq > i.qtyNeeded + EPS) { i.qtyNeeded = acq; raised++; } });
+    Store.save(p.id);
+  });
+  toast(`Excel importado: ${plural(n, "cambio")} aplicado${n === 1 ? "" : "s"}${raised ? ` · ${plural(raised, "elemento")} con cantidad necesaria actualizada` : ""}`);
+}
+async function importCostsXlsx(file, scopePid) {
+  let book;
+  try { book = await readXlsx(await file.arrayBuffer()); }
+  catch (e) { return toast(e.message || "No se pudo leer el archivo", true); }
+  const name = book.names.find(n => norm(n) === "gastos") || book.names[0];
+  if (!name) return toast("El archivo no tiene hojas", true);
+  let plan;
+  try { plan = planCostsImport(book.sheets[name], scopePid); } catch (e) { return toast(e.message, true); }
+  const totals = plan.plans.reduce((a, pl) => a + pl.creates.length + pl.updates.length + pl.newItems.size, 0);
+  const dels = plan.plans.reduce((a, pl) => a + pl.deletes.length, 0);
+  const blocks = plan.plans.map(pl => `<div class="buyinfo"><b>${esc(pl.p.name)}</b><div class="q">
+      <span>${plural(pl.creates.length, "gasto nuevo", "gastos nuevos")}</span><span>${plural(pl.updates.length, "modificado", "modificados")}</span><span>${pl.same} sin cambios</span>
+      ${pl.newItems.size ? `<span>${plural(pl.newItems.size, "elemento de acopio nuevo", "elementos de acopio nuevos")}</span>` : ""}
+      ${pl.deletes.length ? `<span class="over">${pl.deletes.length} no están en el archivo</span>` : ""}</div></div>`).join("");
+  const errs = plan.errors.length ? `<div class="calc warn"><span>${plural(plan.errors.length, "fila con errores", "filas con errores")}: no se importará${plan.errors.length === 1 ? "" : "n"}.</span></div>
+      <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--muted)">${plan.errors.slice(0, 12).map(e => `<li>Fila ${e.line}: ${esc(e.msg)}</li>`).join("")}${plan.errors.length > 12 ? `<li>…y ${plan.errors.length - 12} más</li>` : ""}</ul>` : "";
+  if (!totals && !dels) {
+    return infoModal("Importar Excel", `Hoja «${esc(name)}»: ${plural(plan.read, "fila leída", "filas leídas")}. No hay cambios que aplicar.${plan.errors.length ? "<br><br>" + plan.errors.slice(0, 12).map(e => `Fila ${e.line}: ${esc(e.msg)}`).join("<br>") : ""}`);
+  }
+  openModal({
+    title: "Importar gastos desde Excel", submit: "Importar",
+    body: `<p>Hoja «${esc(name)}» · ${plural(plan.read, "fila leída", "filas leídas")}${plan.skipped ? ` · ${plan.skipped} de otros proyectos omitidas` : ""}.</p>
+      ${blocks}${errs}
+      ${dels ? `<label class="switch"><input type="checkbox" name="del"><span>Eliminar también los ${plural(dels, "gasto")} que no aparecen en el archivo</span></label>` : ""}
+      <p class="note">Los gastos nuevos y modificados se guardarán en tu cuenta. Las compras de acopio actualizan las cantidades adquiridas.</p>`,
+    onSubmit(d) { applyCostsImport(plan, d.del === "on"); }
+  });
+}
+
 /* ---- Copia de seguridad ---- */
 function saveFile(filename, data, type) {
   try {
@@ -1589,15 +1933,6 @@ function exportBackup() {
   const o = {}; Object.values(S.projects).forEach(p => o[p.id] = fullDoc(p));
   const data = JSON.stringify({ app: "LiteProyect", version: 2, exportedAt: new Date().toISOString(), projects: o, images: S.images });
   if (saveFile(`liteproyect-copia-${today()}.json`, data, "application/json")) toast("Copia descargada");
-}
-function exportCosts(pid) {
-  const p = getP(pid); const costs = filteredCosts(p);
-  const n = v => v == null || v === "" ? "" : String(round(v, 4)).replace(".", ",");
-  const cell = v => { v = String(v ?? ""); return /[;"\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
-  const rows = [["Fecha", "Concepto", "Importe (€)", "Nº documento", "Tarea", "Elemento de acopio", "Cantidad", "Unidad", "Precio unitario (€)"]];
-  costs.forEach(c => { const it = c.itemId ? find(p.items, c.itemId) : null; rows.push([fmtDate(c.date), c.concept, n(c.amount), c.docNumber, c.taskId ? taskPath(p, c.taskId) : "", it ? it.name : "", c.itemId ? n(c.qty) : "", it ? it.unit : "", c.itemId ? n(c.unitPrice) : ""]); });
-  const csv = "\ufeff" + rows.map(r => r.map(cell).join(";")).join("\r\n");
-  if (saveFile(`costes-${slugify(p.name)}.csv`, csv, "text/csv;charset=utf-8")) toast("CSV descargado");
 }
 function importBackup(file) {
   const r = new FileReader();
@@ -1674,6 +2009,8 @@ const ACT = {
   /* trabajos */
   "work-new": () => workModal(S.view.id, null),
   "work-edit": id => workModal(S.view.id, id),
+  "work-edit-any": id => { const [pid, wid] = id.split("|"); workModal(pid, wid); },
+  "upc-all": () => { S.ui.upcAll = !S.ui.upcAll; render(); },
   "work-status": id => {
     const [pid, wid, st] = id.split("|"); const p = getP(pid); if (!p || !Store.canWrite()) return;
     const w = find(p.works, wid); if (!w || w.status === st) return;
@@ -1692,7 +2029,8 @@ const ACT = {
   },
   "cost-task-set": id => { costF(S.view.id).task = id; render(); },
   "costs-clear": () => { S.ui.cf[S.view.id] = null; costF(S.view.id); render(); },
-  "costs-export": () => exportCosts(S.view.id),
+  "xlsx-export": () => exportCostsXlsx(),
+  "xlsx-import": () => { S.ui.xlsxScope = S.view.name === "project" ? S.view.id : null; const f = $("#xlsxFile"); f.value = ""; f.click(); },
   /* acopio */
   "folder-new": id => folderModal(S.view.id, null, id || null),
   "folder-edit": id => folderModal(S.view.id, id),
@@ -1768,6 +2106,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("change", e => {
   if (e.target.id === "importFile") { const f = e.target.files[0]; if (f) importBackup(f); return; }
+  if (e.target.id === "xlsxFile") { const f = e.target.files[0]; if (f) importCostsXlsx(f, S.ui.xlsxScope); return; }
   if (e.target.closest("#modal-root")) return;
   const el = e.target.closest("[data-chg]"); if (!el) return;
   const fn = CHG[el.dataset.chg]; if (fn) fn(el);

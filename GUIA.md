@@ -118,6 +118,7 @@ En el ordenador puedes usarla igual desde Chrome o Edge. También se puede insta
 - **Varios dispositivos:** los cambios se ven en todos casi al instante.
 - **Antes de cerrar sesión o desinstalar**, comprueba que el indicador ponga *Sincronizado*. Si no, los cambios aún no subidos se perderían.
 - **Copia extra:** de vez en cuando puedes usar *Exportar todo (.json)* y guardar el archivo en tu Drive. Es opcional.
+- **Gastos en Excel:** en la pestaña *Costes* de cada proyecto (o abajo en la pantalla de inicio, para todos los proyectos) puedes **exportar** los gastos a Excel, editarlos o añadir filas, e **importarlos** de nuevo. Antes de aplicar nada se muestra un resumen con las altas, los cambios y las filas con errores. El archivo exportado incluye las hojas *Tareas* y *Acopio* como referencia, y una hoja de *Instrucciones*. Con un proyecto sin gastos, la exportación sirve de plantilla.
 
 ## Actualizar la app en el futuro
 

@@ -1,6 +1,6 @@
 // Service worker de LiteProyect: guarda la app en el dispositivo para que funcione sin conexión.
 // Al publicar una versión nueva de la app, cambia VERSION para que los móviles la actualicen.
-const VERSION = "liteproyect-v1";
+const VERSION = "liteproyect-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./firebase-config.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png"];
 const CDN_HOSTS = ["www.gstatic.com", "fonts.googleapis.com", "fonts.gstatic.com"];
