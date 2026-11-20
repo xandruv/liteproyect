@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LiteProyect</title>
+<meta name="theme-color" content="#1c1e1b">
+<meta name="description" content="Gestión de pequeños proyectos: tareas, trabajos, costes y acopio.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee;--surface:#fff;--surface-2:#faf8f4;--ink:#1c1e1b;--muted:#6b6f68;--faint:#a2a59e;--line:#e8e4db;
+  --accent:#d4602a;--accent-soft:#fbe9df;--ok:#2e8653;--ok-soft:#e2f2e8;--warn:#a87508;--warn-soft:#fbf0d4;
+  --blue:#4a61a6;--blue-soft:#e7ebf7;--danger:#c23b30;--danger-soft:#fbe4e1;--violet:#7a52b3;--violet-soft:#efe8f8;--teal:#1f8582;--teal-soft:#dff2f1;
+  --radius:14px;--shadow:0 1px 2px rgba(28,30,27,.04),0 6px 20px rgba(28,30,27,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131412;--surface:#1b1c1a;--surface-2:#21221f;--ink:#ecebe6;--muted:#a4a69f;--faint:#6f726b;--line:#2d2e2a;
+  --accent:#ec7a43;--accent-soft:#3a2418;--ok:#5cc184;--ok-soft:#18301f;--warn:#e0aa3e;--warn-soft:#382d12;
+  --blue:#93a6e6;--blue-soft:#1e2540;--danger:#ef6b5f;--danger-soft:#3c1b18;--violet:#b99be6;--violet-soft:#2a2138;--teal:#5cc8c4;--teal-soft:#14302f;--shadow:none}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue)}
+.money,.num{font-variant-numeric:tabular-nums}
+svg{flex:none}
+.wrap{max-width:1180px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(90px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left))}
+.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2) center/cover no-repeat;display:grid;place-items:center;font-weight:800;font-size:14px;cursor:pointer;color:var(--muted);padding:0;flex:none}
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;align-items:center}
+.auth-card .logo{width:52px;height:52px;border-radius:15px}
+.auth-card .logo svg{width:26px;height:26px}
+.auth-card h1{font-size:24px}
+.auth-card p{margin:0;color:var(--muted)}
+.auth-card .btn{width:100%;padding:12px 16px;font-size:15px}
+.auth-card ul{text-align:left;margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.auth-card code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.top-l{display:flex;align-items:center;gap:8px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em;cursor:pointer;white-space:nowrap}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.logo svg{width:16px;height:16px}
+.sync{font-size:12px;color:var(--faint);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+.sync.busy i{background:var(--warn)}
+.sync.local i{background:var(--faint)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--faint)}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.soft{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn.sm svg{width:14px;height:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.icon-btn{width:32px;height:32px;flex:none;display:inline-grid;place-items:center;border:1px solid transparent;background:transparent;border-radius:9px;cursor:pointer;color:var(--muted);padding:0;text-decoration:none}
+.icon-btn:hover{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.icon-btn.del:hover{color:var(--danger)}
+.icon-btn:disabled{opacity:.3;cursor:not-allowed;background:none;border-color:transparent;color:var(--muted)}
+.icon-btn svg{width:16px;height:16px}
+.link{background:none;border:0;padding:0;color:var(--blue);font-weight:600;font-size:12.5px;cursor:pointer}
+.link:hover{text-decoration:underline}
+h1,h2,h3{margin:0;letter-spacing:-.02em}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:13.5px;margin-bottom:16px;font-weight:500}
+.banner.info{background:var(--blue-soft);color:var(--blue)}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+.over{color:var(--danger)!important;font-weight:700}
+.good{color:var(--ok)}
+mark{background:#ffe27a;color:inherit;border-radius:3px;padding:0 1px}
+@media (prefers-color-scheme:dark){mark{background:#7a6514}}
+/* inputs */
+.search{position:relative;display:flex;align-items:center;min-width:0}
+.search svg{position:absolute;left:10px;width:15px;height:15px;color:var(--faint);pointer-events:none}
+.search input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px 8px 32px;font-size:14px;width:240px;max-width:100%;outline:none}
+.search input:focus,.fin:focus{border-color:var(--ink)}
+.fin{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font-size:13.5px;font-weight:600;max-width:240px;outline:none;min-width:0}
+input[type=date].fin{font-weight:500}
+.quick{display:flex;gap:8px;align-items:center;margin-top:10px}
+.quick input{flex:1;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:10px 14px;font-size:14.5px;outline:none;min-width:0}
+.quick input:focus{border-style:solid;border-color:var(--ink);background:var(--surface)}
+/* home */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.stat b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.stat em{font-style:normal;font-size:12px;color:var(--muted)}
+.homebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+.chip span{color:var(--faint);margin-left:4px;font-weight:500}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.on span{color:var(--bg);opacity:.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;display:flex;flex-direction:column;overflow:hidden;transition:border-color .15s,box-shadow .15s,transform .15s}
+.pcard:hover{border-color:var(--faint);box-shadow:var(--shadow);transform:translateY(-1px)}
+.pc-cover{height:118px;background:var(--surface-2) center/cover no-repeat;border-bottom:1px solid var(--line)}
+.pc-in{padding:16px 18px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.pc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pc-date{font-size:12px;color:var(--faint);white-space:nowrap}
+.pcard h3{font-size:17px;font-weight:700;word-break:break-word}
+.pc-desc{margin:0;color:var(--muted);font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pc-prog{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.pc-prog .bar{flex:1}
+.pc-foot{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;border-top:1px solid var(--line);padding-top:12px;margin-top:auto}
+.pc-foot small{display:block;color:var(--faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.pc-foot b{font-size:14.5px}
+.pc-foot em{font-style:normal;color:var(--faint);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-curso{background:var(--accent-soft);color:var(--accent)}
+.st-futuro{background:var(--blue-soft);color:var(--blue)}
+.st-finalizado{background:var(--ok-soft);color:var(--ok)}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--ink);transition:width .3s}
+.bar.ok i{background:var(--ok)}.bar.acc i{background:var(--accent)}.bar.over i{background:var(--danger)}
+.bar.sm{height:4px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius);padding:36px 20px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--ink);font-size:17px;margin-bottom:6px}
+.empty p{margin:0 0 16px}
+.empty p:last-child{margin:0}
+.loading{padding:60px 20px;text-align:center;color:var(--muted)}
+.section-h{display:flex;justify-content:space-between;align-items:center;margin:26px 0 10px;gap:10px}
+.section-h h2{font-size:17px}
+.upc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:24px;overflow:hidden}
+.urow{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line)}
+.urow:last-child{border-bottom:0}
+.urow .ut{flex:1;min-width:0;cursor:pointer}
+.urow .ut b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urow .ut small{color:var(--muted);font-size:12.5px}
+.footer-tools{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+/* project */
+.phead{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.phead-img{width:96px;height:96px;border-radius:16px;background:var(--surface-2) center/cover no-repeat;border:1px solid var(--line);flex:none}
+.phead h1{font-size:28px;font-weight:800;line-height:1.15;word-break:break-word}
+.phead p{margin:6px 0 0;color:var(--muted);max-width:720px;white-space:pre-wrap}
+.phead .dates{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;gap:6px 14px;flex-wrap:wrap}
+.status-select{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;padding:5px 26px 5px 12px;font-weight:700;font-size:12.5px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:12px;margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.kpi small{color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.kpi b em{font-size:13px;font-weight:600;font-style:normal;color:var(--muted)}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px;position:sticky;top:0;background:var(--bg);z-index:6;padding-top:6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;padding:10px 14px;font-weight:700;font-size:14.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab svg{width:16px;height:16px}
+.tab .n{font-size:11.5px;background:var(--line);color:var(--muted);border-radius:99px;padding:1px 7px}
+.tab .n.alert{background:var(--danger-soft);color:var(--danger)}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.tab.on .n{background:var(--ink);color:var(--bg)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar h2{font-size:18px}
+.tb-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.filters label.dl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;margin-right:4px}
+.switch input{appearance:none;-webkit-appearance:none;width:32px;height:18px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s;flex:none}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked{background:var(--ink)}
+.switch input:checked::after{transform:translateX(14px)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.panel+.panel{margin-top:14px}
+.racts{display:flex;gap:2px;opacity:.5;transition:opacity .15s;flex:none;justify-content:flex-end}
+.trow:hover .racts,.irow:hover .racts,.frow:hover .racts,.crow:hover .racts,.hrow:hover .racts{opacity:1}
+@media (hover:none){.racts{opacity:1}}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
+.tag svg{width:11px;height:11px}
+.tag.acc{background:var(--accent-soft);color:var(--accent)}.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}.tag.blue{background:var(--blue-soft);color:var(--blue)}
+.tag.red{background:var(--danger-soft);color:var(--danger)}
+.tg0{background:var(--blue-soft);color:var(--blue)}.tg1{background:var(--ok-soft);color:var(--ok)}.tg2{background:var(--violet-soft);color:var(--violet)}
+.tg3{background:var(--teal-soft);color:var(--teal)}.tg4{background:var(--warn-soft);color:var(--warn)}.tg5{background:var(--accent-soft);color:var(--accent)}
+.caret{width:22px;height:22px;border:0;background:none;padding:0;color:var(--faint);cursor:pointer;display:inline-grid;place-items:center;flex:none;border-radius:6px}
+.caret:hover{background:var(--line);color:var(--ink)}
+.caret svg{width:15px;height:15px;transition:transform .15s}
+.caret.open svg{transform:rotate(90deg)}
+.caret.hidden{visibility:hidden}
+/* tareas */
+.ttable{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);position:relative}
+.thead,.trow{display:grid;grid-template-columns:22px 26px minmax(170px,1.15fr) minmax(0,1.7fr) 74px 92px 150px 66px;align-items:center;column-gap:10px;padding:0 10px}
+.thead{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;padding-top:10px;padding-bottom:8px;border-bottom:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius) var(--radius) 0 0}
+.thead .r{text-align:right}
+.trow{min-height:50px;border-bottom:1px solid var(--line);padding-top:7px;padding-bottom:7px;background:var(--surface)}
+.trow:last-of-type{border-bottom:0;border-radius:0 0 var(--radius) var(--radius)}
+.trow.child{background:var(--surface-2)}
+.drag{cursor:grab;touch-action:none;color:var(--faint);display:grid;place-items:center;height:28px;border-radius:6px;user-select:none}
+.drag:hover{background:var(--line);color:var(--ink)}
+.drag svg{width:15px;height:15px}
+.tcheck{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid var(--faint);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;color:#fff;position:relative;overflow:hidden}
+.tcheck svg{width:13px;height:13px;stroke-width:3;position:relative;z-index:1}
+.ts-curso .tcheck{border-color:var(--accent)}
+.ts-curso .tcheck::after{content:"";position:absolute;left:0;top:0;bottom:0;width:50%;background:var(--accent)}
+.ts-hecha .tcheck{border-color:var(--ok);background:var(--ok)}
+.tname{display:flex;align-items:center;gap:4px;min-width:0;padding-left:calc(var(--d,0)*18px)}
+.ttitle{font-weight:700;word-break:break-word;cursor:pointer;min-width:0}
+.ts-hecha .ttitle,.ts-hecha .tdesc{color:var(--faint);text-decoration:line-through;text-decoration-color:var(--faint)}
+.tsub{font-size:11.5px;color:var(--faint);font-weight:600;margin-left:6px;white-space:nowrap}
+.tdesc{color:var(--muted);font-size:13.5px;cursor:pointer;min-width:0;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tmeta{display:contents}
+.prio{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.prio i{width:8px;height:8px;border-radius:2px}
+.p-alta{color:var(--danger)}.p-alta i{background:var(--danger)}
+.p-media{color:var(--warn)}.p-media i{background:var(--warn)}
+.p-baja{color:var(--faint)}.p-baja i{background:var(--faint)}
+.dt{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.dt svg{width:13px;height:13px}
+.dt.late{color:var(--danger);font-weight:700}.dt.ok{color:var(--ok)}.dt.none{color:var(--faint)}
+.tc{text-align:right;font-size:13px;line-height:1.25;white-space:nowrap}
+.tc b{font-weight:800;display:block}
+.tc small{color:var(--faint);font-size:11.5px;font-weight:600}
+.drop-ind{position:absolute;left:10px;right:10px;height:3px;margin-top:-1.5px;background:var(--accent);border-radius:3px;pointer-events:none;display:none;z-index:4}
+.trow.dragging{opacity:.35}
+.trow.drop-in{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+body.is-dragging,body.is-dragging *{cursor:grabbing!important;user-select:none}
+/* costes */
+.csum{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:16px 18px;flex-wrap:wrap}
+.csum small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.csum b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.csum .budget{flex:1;min-width:220px;max-width:440px;display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted)}
+.brk{padding:6px 18px 14px;border-top:1px solid var(--line)}
+.brk h4{margin:10px 0 8px;font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between}
+.brow{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr 170px;gap:12px;align-items:center;padding:5px 0;font-size:13.5px;cursor:pointer}
+.brow:hover .bname{text-decoration:underline}
+.brow .bname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.brow .bar i{background:var(--accent)}
+.brow .bv{text-align:right;white-space:nowrap}
+.brow .bv small{color:var(--faint)}
+.mhd{display:flex;justify-content:space-between;padding:9px 18px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--muted);text-transform:capitalize}
+.crow{display:flex;align-items:center;gap:14px;padding:11px 12px 11px 18px;border-bottom:1px solid var(--line)}
+.crow:last-child{border-bottom:0}
+.cdate{width:46px;flex:none;text-align:center;line-height:1.1}
+.cdate b{display:block;font-size:17px;font-weight:800}
+.cdate small{font-size:11px;color:var(--faint);text-transform:uppercase;font-weight:700}
+.cmain{flex:1;min-width:0;cursor:pointer}
+.ctitle{font-weight:600;word-break:break-word}
+.cmeta{display:flex;gap:4px 10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:2px;align-items:center}
+.camt{font-weight:800;font-size:15px;white-space:nowrap}
+/* acopio */
+.asum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.asum .tag{font-size:12.5px;padding:4px 11px}
+.frow{display:flex;align-items:center;gap:8px;padding:10px 10px 10px calc(10px + var(--d,0)*24px);border-bottom:1px solid var(--line);background:var(--surface-2)}
+.frow .fic{color:var(--accent);flex:none;display:grid}
+.frow .fic svg{width:18px;height:18px}
+.fname{flex:1;min-width:0;cursor:pointer;display:flex;flex-direction:column}
+.fname b{font-weight:700;word-break:break-word}
+.fname small{font-weight:600;color:var(--muted);font-size:12px;display:flex;gap:4px 12px;flex-wrap:wrap}
+.irow{display:flex;align-items:center;gap:10px;padding:11px 10px 11px calc(10px + var(--d,0)*24px);border-bottom:1px solid var(--line)}
+.panel>:last-child{border-bottom:0}
+.idot{width:22px;flex:none;display:grid;place-items:center}
+.idot i{width:10px;height:10px;border-radius:50%;border:2px solid var(--faint)}
+.idot.part i{border-color:var(--warn);background:linear-gradient(90deg,var(--warn) 50%,transparent 50%)}
+.idot.done i{border-color:var(--ok);background:var(--ok)}
+.ibody{flex:1;min-width:0}
+.ititle{font-weight:600;cursor:pointer;word-break:break-word;display:inline}
+.irow.done .ititle{color:var(--muted)}
+.ilink{display:inline-flex;vertical-align:-2px;margin-left:6px;color:var(--blue)}
+.ilink svg{width:14px;height:14px}
+.idesc{font-size:12.5px;color:var(--faint);margin-top:1px;word-break:break-word}
+.iqty{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.iqty .bar{width:80px}
+.imoney{display:flex;gap:4px 12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:4px}
+.imoney b{color:var(--ink);font-weight:700}
+.iacts{display:flex;align-items:center;gap:4px;flex:none}
+.hist{background:var(--surface-2);border-bottom:1px solid var(--line);padding:6px 14px 10px calc(56px + var(--d,0)*24px)}
+.hist h5{margin:6px 0 4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+.hrow{display:flex;align-items:center;gap:12px;font-size:13px;padding:4px 0;border-top:1px dashed var(--line)}
+.hrow:first-of-type{border-top:0}
+.hrow .hd{width:84px;flex:none;color:var(--muted)}
+.hrow .hm{flex:1;min-width:0;color:var(--muted)}
+.hrow .hm b{color:var(--ink)}
+.hrow .ha{font-weight:700;white-space:nowrap}
+/* trabajos */
+.whl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.whl button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 14px;cursor:pointer;display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:13px;color:var(--muted)}
+.whl button b{font-size:18px;font-weight:800;color:var(--ink)}
+.whl button.late b{color:var(--danger)}
+.whl button.today b{color:var(--accent)}
+.whl button.soon b{color:var(--blue)}
+.whl button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.tagbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tagbar .tag{cursor:pointer;border:1px solid transparent;padding:3px 10px;font-size:12px}
+.tagbar .tag.off{background:var(--surface);border-color:var(--line);color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.wcol{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:110px}
+.wcol-h{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 2px;font-weight:800;font-size:13.5px}
+.wcol-h .tag{font-size:11.5px}
+.wcol .wempty{color:var(--faint);font-size:13px;text-align:center;padding:16px 0}
+.wcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;position:relative}
+.wcard.late{box-shadow:inset 3px 0 0 var(--danger)}
+.wcard.today{box-shadow:inset 3px 0 0 var(--accent)}
+.wcard.done .wc-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
+.wc-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.wc-title{font-weight:700;cursor:pointer;word-break:break-word}
+.wc-desc{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.wc-tags{display:flex;gap:4px;flex-wrap:wrap}
+.wc-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.wc-task{font-size:12px;color:var(--faint);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.wseg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
+.wseg button{border:0;background:none;width:30px;height:24px;border-radius:7px;cursor:pointer;display:grid;place-items:center;color:var(--faint);padding:0}
+.wseg button svg{width:14px;height:14px}
+.wseg button:hover{color:var(--ink);background:var(--line)}
+.wseg button.on.s-pendiente{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.wseg button.on.s-curso{background:var(--accent);color:#fff}
+.wseg button.on.s-hecho{background:var(--ok);color:#fff}
+.wdate{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.wdate svg{width:13px;height:13px}
+.wdate.late{color:var(--danger)}.wdate.today{color:var(--accent)}.wdate.soon{color:var(--blue)}.wdate.nodate{color:var(--faint);font-weight:600}
+.rec{color:var(--faint);display:inline-grid}
+.rec svg{width:13px;height:13px}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(15,16,14,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;animation:fade .15s}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:560px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .18s}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 6px 22px}
+.mhead h3{font-size:18px}
+.mbody{padding:10px 22px 6px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.mbody p{margin:0;color:var(--muted)}
+.mbody .note{font-size:12.5px;color:var(--faint)}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px 18px;align-items:center}
+.merr{color:var(--danger);font-size:13px;font-weight:600;margin-right:auto}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.field small{color:var(--faint);font-size:12px}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:15px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s;min-width:0}
+.field textarea{resize:vertical;min-height:64px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(28,30,27,.08);background:var(--surface)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg label{flex:1;text-align:center;cursor:pointer}
+.seg input{display:none}
+.seg span{display:block;padding:7px 8px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.seg input:checked+span{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.buyinfo{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.buyinfo b{display:block;font-size:15.5px}
+.buyinfo .q{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
+.calc{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;gap:6px 10px;flex-wrap:wrap}
+.calc.warn{background:var(--warn-soft);color:var(--warn)}
+.calc:empty{display:none}
+.imgpick{display:flex;gap:12px;align-items:center}
+.imgpick .prev{width:72px;height:72px;border-radius:12px;border:1px dashed var(--line);background:var(--surface-2) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint)}
+.imgpick .prev svg{width:22px;height:22px}
+.imgpick .prev.has svg{display:none}
+.imgpick input[type=file]{display:none}
+.tagpick{display:flex;gap:6px;flex-wrap:wrap}
+.tagpick .tag{cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:4px 10px;font-size:12.5px}
+.tagpick .tag.on{border-color:transparent}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:all .2s;z-index:60;max-width:calc(100vw - 32px);text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--danger);color:#fff}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}}
+@media (max-width:1000px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .thead{display:none}
+  .trow{grid-template-columns:20px 24px minmax(0,1fr) auto;grid-template-areas:"drag chk name act" ". . desc desc" ". . meta meta";row-gap:3px;padding-left:calc(6px + min(var(--d,0),5)*14px)}
+  .trow>.drag{grid-area:drag}.trow>.tcheck{grid-area:chk}.trow>.tname{grid-area:name;padding-left:0}.trow>.tdesc{grid-area:desc}.trow>.racts{grid-area:act}
+  .tdesc:empty{display:none}
+  .tmeta{display:flex;grid-area:meta;gap:4px 14px;flex-wrap:wrap;align-items:center}
+  .tmeta>:empty{display:none}
+  .tc{text-align:left}
+  .tc b{display:inline;margin-right:4px}
+  .dt.none{display:none}
+  .board{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .wrap{padding:14px 14px 90px}
+  .stats{grid-template-columns:1fr 1fr}
+  .kpis{gap:8px}
+  .kpi{padding:12px}
+  .kpi b{font-size:18px}
+  .phead{gap:12px}
+  .phead-img{width:64px;height:64px;border-radius:12px}
+  .phead h1{font-size:22px}
+  .tab{padding:10px 10px;font-size:14px}
+  .tab svg{display:none}
+  .irow,.frow{padding-left:calc(8px + min(var(--d,0),5)*14px)}
+  .hist{padding-left:calc(20px + min(var(--d,0),5)*14px)}
+  .irow{flex-wrap:wrap}
+  .iacts{width:100%;justify-content:flex-end;padding-left:32px}
+  .iacts .btn{margin-right:auto}
+  .brow{grid-template-columns:1fr auto}
+  .brow .bar{grid-column:1/-1;grid-row:2}
+  .overlay{align-items:flex-end;padding:0}
+  .modal{max-width:none;border-radius:18px 18px 0 0;max-height:92vh}
+  .row2,.row3{grid-template-columns:1fr}
+  .row2.keep{grid-template-columns:1fr 1fr}
+  .toolbar h2{width:100%}
+  .crow{gap:10px;padding-left:12px}
+  .hrow{flex-wrap:wrap;gap:2px 10px}
+  .hrow .hd{width:auto}
+  .search,.search input{width:100%}
+  .homebar .search{flex:1 1 100%}
+  .pc-foot{grid-template-columns:1fr 1fr 1fr}
+  .top .btn span{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Cargando…</div></div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+<input type="file" id="importFile" accept=".json,application/json" style="display:none">
+<datalist id="units"><option>ud</option><option>m</option><option>m²</option><option>m³</option><option>ml</option><option>kg</option><option>g</option><option>l</option><option>saco</option><option>caja</option><option>paquete</option><option>rollo</option><option>bote</option><option>tubo</option><option>par</option><option>juego</option><option>hoja</option><option>tablero</option><option>palé</option></datalist>
+<script type="module">
+/* LiteProyect PWA · datos en Firebase (tu cuenta de Google), con funcionamiento sin conexión */
+const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/12.18.0/";
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const MONEY = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+const NUM = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 });
+const money = n => MONEY.format(Number(n) || 0);
+const num = n => NUM.format(Number(n) || 0);
+const round = (n, d = 2) => Math.round((Number(n) + Number.EPSILON) * 10 ** d) / 10 ** d;
+const sum = arr => arr.reduce((a, b) => a + (Number(b) || 0), 0);
+const EPS = 1e-9;
+const clone = o => JSON.parse(JSON.stringify(o));
+const stable = o => JSON.stringify(o, (k, v) => v && typeof v === "object" && !Array.isArray(v) ? Object.keys(v).sort().reduce((a, key) => (a[key] = v[key], a), {}) : v);
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const plural = (n, s, p) => `${n} ${n === 1 ? s : (p || s + "s")}`;
+function parseNum(v) {
+  if (v == null) return NaN;
+  v = String(v).trim().replace(/\s|€/g, "");
+  if (!v) return NaN;
+  if (v.includes(",")) v = v.replace(/\./g, "").replace(",", ".");
+  return Number(v);
+}
+const toInput = n => (n == null || n === "" || !isFinite(n)) ? "" : String(round(n, 4)).replace(".", ",");
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const today = () => iso(new Date());
+function toDate(s) { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d || 1); }
+const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return iso(d); };
+function addInterval(s, n, u) {
+  const d = toDate(s);
+  if (u === "m") { const day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); d.setDate(Math.min(day, last)); }
+  else d.setDate(d.getDate() + n * (u === "w" ? 7 : 1));
+  return iso(d);
+}
+const fmtDate = s => s ? toDate(s).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+const fmtShort = s => { if (!s) return ""; const d = toDate(s); const o = { day: "numeric", month: "short" }; if (d.getFullYear() !== new Date().getFullYear()) o.year = "2-digit"; return d.toLocaleDateString("es-ES", o).replace(".", ""); };
+const fmtDayMon = s => { const d = toDate(s); return { day: d.getDate(), mon: d.toLocaleDateString("es-ES", { month: "short" }).replace(".", "") }; };
+const fmtMonth = key => toDate(key + "-01").toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+const fmtTs = ts => ts ? new Date(ts).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+const slugify = s => norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "proyecto";
+function hl(text, q) {
+  text = String(text || ""); if (!q) return esc(text);
+  const chars = [...text]; const map = []; let n = "";
+  chars.forEach((c, i) => { const x = norm(c); for (let k = 0; k < x.length; k++) map.push(i); n += x; });
+  let out = "", last = 0, from = 0, idx;
+  while (q && (idx = n.indexOf(q, from)) !== -1) {
+    const a = map[idx], b = map[idx + q.length - 1] + 1;
+    out += esc(chars.slice(last, a).join("")) + "<mark>" + esc(chars.slice(a, b).join("")) + "</mark>";
+    last = b; from = idx + q.length;
+  }
+  return out + esc(chars.slice(last).join(""));
+}
+const tagClass = t => "tg" + ([...norm(t)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 6);
+
+const ICON = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  trash: '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>',
+  chev: '<path d="m9 18 6-6-6-6"/>',
+  back: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  folderPlus: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 11v5M9.5 13.5h5"/>',
+  cart: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  tasks: '<path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',
+  coins: '<circle cx="9" cy="9" r="6"/><path d="M15.5 9.5a6 6 0 1 1-6 6"/>',
+  box: '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  works: '<rect x="3" y="4" width="7" height="16" rx="2"/><rect x="14" y="4" width="7" height="10" rx="2"/>',
+  logo: '<path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/>',
+  grip: '<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',
+  link: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff: '<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+  repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  alert: '<path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17v.5"/>',
+  play: '<path d="M7 4v16l13-8Z"/>',
+  circle: '<circle cx="12" cy="12" r="8"/>',
+  half: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+  upload: '<path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'
+};
+const ic = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
+
+const PSTATUS = { curso: "En curso", futuro: "Futuro", finalizado: "Finalizado" };
+const PORDER = { curso: 0, futuro: 1, finalizado: 2 };
+const TSTATUS = { pendiente: "Pendiente", curso: "En curso", hecha: "Hecha" };
+const PRIO = { alta: "Alta", media: "Media", baja: "Baja" };
+const WSTATUS = { pendiente: "Pendiente", curso: "En curso", hecho: "Realizado" };
+const RECUR = { d: ["día", "días"], w: ["semana", "semanas"], m: ["mes", "meses"] };
+
+/* =========================================================
+   Estado
+   ========================================================= */
+const S = {
+  projects: {}, images: {}, loaded: false, slow: false, mode: "pending", error: null, canDownload: false,
+  view: { name: "home" }, filter: "todos", homeQ: "",
+  ui: {
+    tab: {}, collapsedT: new Set(), collapsedF: new Set(), hist: new Set(), onlyPending: false, hideDone: false,
+    cf: {}, wf: {}, aq: {}, lastTask: {}, allDone: false
+  }
+};
+const costF = id => S.ui.cf[id] || (S.ui.cf[id] = { task: "", from: "", to: "", q: "", origin: "" });
+const workF = id => S.ui.wf[id] || (S.ui.wf[id] = { q: "", from: "", to: "", tags: [], when: "" });
+
+/* Normaliza un proyecto (incluye migración de la versión 1) */
+function normalize(d, id) {
+  d = d ? clone(d) : {};
+  const nb = v => (v == null || v === "" || !isFinite(v)) ? null : Number(v);
+  const p = {
+    id, name: d.name || "Sin nombre", description: d.description || "", status: PSTATUS[d.status] ? d.status : "futuro",
+    budget: nb(d.budget), startDate: d.startDate || "", plannedEndDate: d.plannedEndDate || "", endDate: d.endDate || "",
+    createdAt: d.createdAt || Date.now(), updatedAt: d.updatedAt || Date.now(),
+    tasks: Array.isArray(d.tasks) ? d.tasks : [], costs: Array.isArray(d.costs) ? d.costs : [],
+    folders: Array.isArray(d.folders) ? d.folders : [], items: Array.isArray(d.items) ? d.items : [],
+    works: Array.isArray(d.works) ? d.works : [], _rev: 0
+  };
+  const tIds = new Set(p.tasks.map(t => t.id)), fIds = new Set(p.folders.map(f => f.id)), iIds = new Set(p.items.map(i => i.id));
+  p.tasks.forEach(t => {
+    t.title = t.title || "Tarea";
+    if (t.description == null) t.description = t.notes || ""; delete t.notes;
+    t.parentId = t.parentId && tIds.has(t.parentId) && t.parentId !== t.id ? t.parentId : null;
+    t.status = TSTATUS[t.status] ? t.status : "pendiente";
+    t.priority = PRIO[t.priority] ? t.priority : "media";
+    t.startDate = t.startDate || ""; t.dueDate = t.dueDate || ""; t.endDate = t.endDate || "";
+    t.estExtra = nb(t.estExtra);
+    if (t.order == null || !isFinite(t.order)) t.order = t.createdAt || 0;
+  });
+  p.costs.forEach(c => {
+    c.amount = Number(c.amount) || 0; c.taskId = c.taskId && tIds.has(c.taskId) ? c.taskId : null;
+    c.itemId = c.itemId && iIds.has(c.itemId) ? c.itemId : null;
+    if (!c.itemId) { delete c.qty; delete c.unitPrice; }
+    c.concept = c.concept || "Gasto"; c.docNumber = c.docNumber || ""; c.date = c.date || "";
+  });
+  p.folders.forEach(f => { f.parentId = f.parentId && fIds.has(f.parentId) && f.parentId !== f.id ? f.parentId : null; f.hideCost = !!f.hideCost; f.name = f.name || "Carpeta"; });
+  p.items.forEach(i => {
+    i.folderId = i.folderId && fIds.has(i.folderId) ? i.folderId : null;
+    i.qtyNeeded = Number(i.qtyNeeded) > 0 ? Number(i.qtyNeeded) : 1; i.unit = i.unit || "ud";
+    i.estPrice = nb(i.estPrice); i.taskId = i.taskId && tIds.has(i.taskId) ? i.taskId : null;
+    i.url = i.url || ""; i.description = i.description || "";
+  });
+  p.works.forEach(w => {
+    w.title = w.title || "Trabajo"; w.description = w.description || "";
+    w.status = WSTATUS[w.status] ? w.status : "pendiente";
+    w.tags = Array.isArray(w.tags) ? w.tags.filter(Boolean) : [];
+    w.taskId = w.taskId && tIds.has(w.taskId) ? w.taskId : null;
+    w.startDate = w.startDate || ""; w.endDate = w.endDate || ""; w.doneDate = w.doneDate || "";
+    w.recur = w.recur && RECUR[w.recur.u] && w.recur.n > 0 ? { n: Math.round(w.recur.n), u: w.recur.u } : null;
+  });
+  return p;
+}
+
+/* Partes de un proyecto: cada una se guarda en su propio documento */
+const PARTS = { meta: "projects", costs: "pcosts", acopio: "pacopio", works: "pworks" };
+const META_FIELDS = ["name", "description", "status", "budget", "startDate", "plannedEndDate", "endDate", "createdAt", "updatedAt", "tasks"];
+function partOf(p, part) {
+  if (part === "meta") { const o = {}; META_FIELDS.forEach(k => o[k] = p[k]); return clone(o); }
+  if (part === "costs") return clone({ costs: p.costs });
+  if (part === "acopio") return clone({ folders: p.folders, items: p.items });
+  return clone({ works: p.works });
+}
+const fullDoc = p => ({ ...partOf(p, "meta"), ...partOf(p, "costs"), ...partOf(p, "acopio"), ...partOf(p, "works") });
+
+/* =========================================================
+   Almacenamiento: Firestore (tu cuenta de Google) con caché local persistente.
+   Los cambios se guardan al instante en el móvil y se suben solos cuando hay conexión.
+   ========================================================= */
+let FB = null; /* { app, db, auth, fs, au } */
+const Store = {
+  uid: null, raw: { meta: {}, costs: {}, acopio: {}, works: {} }, ready: new Set(),
+  last: new Map(), local: new Map(), sawPending: new Set(), pendingColl: new Set(), unsubs: [], deleting: new Set(), timer: null,
+  busy(coll, id) { return this.local.has(coll + ":" + id); },
+  ref(coll, id) { return FB.fs.doc(FB.db, "users", this.uid, coll, id); },
+  start(uid) {
+    this.stop(); this.uid = uid; S.mode = "cloud"; S.loaded = false; S.slow = false; S.error = null;
+    this.timer = setTimeout(() => {
+      if (!S.loaded) { S.slow = true; Object.keys(PARTS).forEach(p => this.ready.add(p)); S.loaded = true; this.assembleAll(); render(); }
+    }, 10000);
+    const listen = (coll, onData) => {
+      const q = FB.fs.collection(FB.db, "users", uid, coll);
+      this.unsubs.push(FB.fs.onSnapshot(q, { includeMetadataChanges: true }, snap => {
+        if (snap.metadata.hasPendingWrites) this.pendingColl.add(coll); else this.pendingColl.delete(coll);
+        const ids = new Set();
+        const next = {};
+        snap.docs.forEach(d => {
+          const data = d.data(), k = coll + ":" + d.id, js = stable(data);
+          ids.add(d.id); next[d.id] = data; this.last.set(k, js);
+          if (this.local.has(k)) {
+            if (d.metadata.hasPendingWrites) this.sawPending.add(k);
+            if (this.local.get(k) === js || (!d.metadata.hasPendingWrites && this.sawPending.has(k))) { this.local.delete(k); this.sawPending.delete(k); }
+          }
+        });
+        for (const [k, v] of this.local) if (v === "__del" && k.startsWith(coll + ":") && !ids.has(k.slice(coll.length + 1))) this.local.delete(k);
+        onData(next, snap);
+        updateSync();
+      }, err => this.fail(err)));
+    };
+    Object.entries(PARTS).forEach(([part, coll]) => listen(coll, (next, snap) => {
+      this.raw[part] = next;
+      /* En un dispositivo nuevo la caché está vacía: esperamos a los datos del servidor */
+      if (!(snap.metadata.fromCache && snap.empty && navigator.onLine)) this.ready.add(part);
+      if (this.ready.size === 4) {
+        if (!S.loaded) { S.loaded = true; clearTimeout(this.timer); }
+        if (!snap.metadata.fromCache) S.slow = false;
+        this.assembleAll(); render();
+      }
+    }));
+    listen("pimages", next => {
+      const imgs = {};
+      Object.entries(next).forEach(([id, v]) => { if (v && v.data) imgs[id] = v.data; });
+      new Set([...Object.keys(imgs), ...Object.keys(S.images)]).forEach(id => {
+        if (this.busy("pimages", id)) { if (S.images[id]) imgs[id] = S.images[id]; else delete imgs[id]; }
+      });
+      S.images = imgs; if (S.loaded) render();
+    });
+  },
+  stop() {
+    this.unsubs.forEach(u => { try { u(); } catch (e) { } }); this.unsubs = [];
+    clearTimeout(this.timer);
+    this.uid = null; this.raw = { meta: {}, costs: {}, acopio: {}, works: {} }; this.ready = new Set();
+    this.last = new Map(); this.local = new Map(); this.sawPending = new Set(); this.pendingColl = new Set();
+    S.projects = {}; S.images = {}; S.loaded = false;
+  },
+  fail(err) {
+    clearTimeout(this.timer); S.slow = false; S.loaded = true;
+    S.error = err && err.code === "permission-denied"
+      ? "Firebase ha denegado el acceso a tus datos. Revisa las reglas de Firestore (paso 4 de la guía)."
+      : "No se pudo conectar con la base de datos (" + (err && err.code || "error") + "). Recarga la app.";
+    render();
+  },
+  assemble(id) {
+    const local = S.projects[id];
+    const src = part => (local && this.busy(PARTS[part], id)) ? partOf(local, part) : this.raw[part][id];
+    const m = src("meta"); if (!m) return null;
+    const pick = (part, legacy) => src(part) || (legacy ? legacy : local ? partOf(local, part) : null);
+    const c = pick("costs", m.costs && { costs: m.costs });
+    const a = pick("acopio", (m.folders || m.items) && { folders: m.folders || [], items: m.items || [] });
+    const w = pick("works", m.works && { works: m.works });
+    return normalize({ ...m, costs: c ? c.costs : [], folders: a ? a.folders : [], items: a ? a.items : [], works: w ? w.works : [] }, id);
+  },
+  assembleAll() {
+    const ids = new Set(Object.keys(this.raw.meta));
+    Object.keys(S.projects).forEach(id => { if (this.busy("projects", id)) ids.add(id); });
+    const next = {};
+    ids.forEach(id => { if (this.deleting.has(id)) return; const p = this.assemble(id); if (p) next[id] = p; });
+    S.projects = next;
+  },
+  canWrite() {
+    if (!this.uid) { toast("Inicia sesión para guardar cambios", true); return false; }
+    if (S.error) { toast("No se puede guardar: " + S.error, true); return false; }
+    return true;
+  },
+  write(coll, id, data) {
+    const k = coll + ":" + id, ref = this.ref(coll, id);
+    this.sawPending.delete(k);
+    if (data === null) {
+      this.local.set(k, "__del");
+      FB.fs.deleteDoc(ref).catch(e => this.writeErr(k, e));
+    } else {
+      const js = stable(data); this.local.set(k, js); this.last.set(k, js);
+      FB.fs.setDoc(ref, data).catch(e => this.writeErr(k, e));
+    }
+    updateSync();
+  },
+  writeErr(k, e) {
+    this.local.delete(k); this.last.delete(k); this.sawPending.delete(k);
+    const code = e && e.code;
+    toast(code === "permission-denied" ? "Sin permiso para guardar. Revisa las reglas de Firestore." : code === "invalid-argument" ? "No se pudo guardar: el proyecto es demasiado grande o tiene datos no válidos." : "No se pudo guardar un cambio (" + (code || "error") + ").", true);
+    updateSync();
+  },
+  save(id) {
+    const p = S.projects[id]; if (!p) return;
+    p.updatedAt = Date.now(); p._rev++;
+    render();
+    if (!this.uid) return;
+    Object.entries(PARTS).forEach(([part, coll]) => {
+      const data = partOf(p, part);
+      if (this.last.get(coll + ":" + id) === stable(data)) return;
+      this.write(coll, id, data);
+    });
+  },
+  setImage(id, data) {
+    if (data) S.images[id] = data; else delete S.images[id];
+    render();
+    if (!this.uid) return;
+    if (data) this.write("pimages", id, { data }); else if (this.last.has("pimages:" + id)) this.write("pimages", id, null);
+  },
+  remove(id) {
+    delete S.projects[id]; delete S.images[id];
+    render();
+    if (!this.uid) return;
+    this.deleting.add(id);
+    Object.values(PARTS).forEach(coll => { if (this.last.has(coll + ":" + id) || coll === "projects") this.write(coll, id, null); });
+    if (this.last.has("pimages:" + id)) this.write("pimages", id, null);
+  }
+};
+function updateSync() {
+  const el = document.getElementById("sync"); if (!el) return;
+  if (S.mode !== "cloud") { el.innerHTML = ""; return; }
+  const pending = Store.local.size > 0 || Store.pendingColl.size > 0;
+  if (!navigator.onLine) { el.className = "sync local"; el.innerHTML = `<i></i><span>Sin conexión${pending ? " · se subirá al conectar" : ""}</span>`; }
+  else if (pending) { el.className = "sync busy"; el.innerHTML = "<i></i><span>Sincronizando…</span>"; }
+  else { el.className = "sync"; el.innerHTML = "<i></i><span>Sincronizado</span>"; }
+}
+window.addEventListener("online", updateSync);
+window.addEventListener("offline", updateSync);
+
+/* =========================================================
+   Cálculos (con índice en caché por revisión)
+   ========================================================= */
+const byOrder = (a, b) => (a.order - b.order) || ((a.createdAt || 0) - (b.createdAt || 0));
+const byCreated = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
+const byName = (a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base", numeric: true });
+const itemExpected = i => i.estPrice != null ? round(i.estPrice * i.qtyNeeded) : null;
+
+function IX(p) {
+  if (p._ix && p._ix.rev === p._rev) return p._ix;
+  const kids = new Map();
+  p.tasks.forEach(t => { const k = t.parentId || ""; if (!kids.has(k)) kids.set(k, []); kids.get(k).push(t); });
+  kids.forEach(a => a.sort(byOrder));
+  const tasks = new Map(p.tasks.map(t => [t.id, t]));
+  const buys = new Map();
+  p.costs.forEach(c => { if (c.itemId) { if (!buys.has(c.itemId)) buys.set(c.itemId, []); buys.get(c.itemId).push(c); } });
+  const realD = new Map(), budD = new Map();
+  const add = (m, k, v) => m.set(k, (m.get(k) || 0) + v);
+  p.costs.forEach(c => { if (c.taskId) add(realD, c.taskId, c.amount); });
+  p.items.forEach(i => { const e = itemExpected(i); if (e != null && i.taskId) add(budD, i.taskId, e); });
+  p.tasks.forEach(t => { if (t.estExtra) add(budD, t.id, t.estExtra); });
+  const real = new Map(), bud = new Map(), leaves = new Map(), depth = new Map();
+  const seen = new Set();
+  const roll = (t, d) => {
+    if (seen.has(t.id)) return; seen.add(t.id); depth.set(t.id, d);
+    let r = realD.get(t.id) || 0, b = budD.get(t.id) || 0, ld = 0, lt = 0;
+    const ch = kids.get(t.id) || [];
+    if (!ch.length) { lt = 1; ld = t.status === "hecha" ? 1 : 0; }
+    ch.forEach(c => { roll(c, d + 1); r += real.get(c.id) || 0; b += bud.get(c.id) || 0; const l = leaves.get(c.id) || [0, 0]; ld += l[0]; lt += l[1]; });
+    real.set(t.id, round(r)); bud.set(t.id, round(b)); leaves.set(t.id, [ld, lt]);
+  };
+  (kids.get("") || []).forEach(t => roll(t, 0));
+  const items = new Map();
+  p.items.forEach(i => {
+    const b = buys.get(i.id) || [];
+    const acq = round(sum(b.map(c => c.qty)), 4), spent = round(sum(b.map(c => c.amount))), expected = itemExpected(i);
+    const done = acq >= i.qtyNeeded - EPS;
+    items.set(i.id, {
+      acq, spent, expected, done, part: acq > EPS && !done, pend: Math.max(0, round(i.qtyNeeded - acq, 4)),
+      pendAmt: expected == null || done ? 0 : Math.max(0, round(expected - spent)),
+      dev: expected != null && done ? round(spent - expected) : null
+    });
+  });
+  return p._ix = { rev: p._rev, kids, tasks, buys, real, bud, leaves, depth, items };
+}
+const kidsOf = (p, id) => IX(p).kids.get(id || "") || [];
+function descendants(p, id) { const out = []; const walk = x => kidsOf(p, x).forEach(c => { if (!out.includes(c.id)) { out.push(c.id); walk(c.id); } }); walk(id); return out; }
+const taskName = (p, id) => { const t = IX(p).tasks.get(id); return t ? t.title : ""; };
+function taskPath(p, id) { const ix = IX(p); const parts = []; let t = ix.tasks.get(id), g = 0; while (t && g++ < 40) { parts.unshift(t.title); t = ix.tasks.get(t.parentId); } return parts.join(" › "); }
+const itemState = (p, i) => IX(p).items.get(i.id) || { acq: 0, spent: 0, expected: null, done: false, part: false, pend: i.qtyNeeded, pendAmt: 0, dev: null };
+function folderDesc(p, id) { const out = []; const walk = x => p.folders.filter(f => f.parentId === x).forEach(f => { if (!out.includes(f.id)) { out.push(f.id); walk(f.id); } }); walk(id); return out; }
+function folderStats(p, id) {
+  const ids = new Set([id, ...folderDesc(p, id)]);
+  const st = p.items.filter(i => ids.has(i.folderId)).map(i => itemState(p, i));
+  return { total: st.length, pending: st.filter(s => !s.done).length, spent: round(sum(st.map(s => s.spent))), expected: round(sum(st.map(s => s.expected || 0))), pendAmt: round(sum(st.map(s => s.pendAmt))) };
+}
+function wRange(w) { return [w.startDate || w.endDate, w.endDate || w.startDate]; }
+function wUrgency(w, td) {
+  if (w.status === "hecho") return "done";
+  const [a, b] = wRange(w); if (!a) return "nodate";
+  if (b < td) return "late"; if (a <= td) return "today"; if (a <= addDays(td, 7)) return "soon"; return "later";
+}
+function metrics(p) {
+  const ix = IX(p); let done = 0, total = 0;
+  kidsOf(p, null).forEach(t => { const l = ix.leaves.get(t.id) || [0, 0]; done += l[0]; total += l[1]; });
+  const st = p.items.map(i => itemState(p, i)); const td = today();
+  const urg = p.works.map(w => wUrgency(w, td));
+  return {
+    leaves: total, done, pct: total ? Math.round(done / total * 100) : 0,
+    spent: round(sum(p.costs.map(c => c.amount))),
+    budgeted: round(sum(st.map(s => s.expected || 0)) + sum(p.tasks.map(t => t.estExtra || 0))),
+    items: p.items.length, pendingItems: st.filter(s => !s.done).length, doneItems: st.filter(s => s.done).length,
+    pendAmt: round(sum(st.map(s => s.pendAmt))),
+    worksOpen: urg.filter(u => u !== "done").length, worksLate: urg.filter(u => u === "late").length,
+    worksSoon: urg.filter(u => u === "today" || u === "soon").length,
+    lateTasks: p.tasks.filter(t => t.status !== "hecha" && t.dueDate && t.dueDate < td).length
+  };
+}
+function taskOptions(p, selected, exclude = [], parent = null, depth = 0) {
+  return kidsOf(p, parent).filter(t => !exclude.includes(t.id)).map(t =>
+    `<option value="${t.id}" ${t.id === selected ? "selected" : ""}>${"    ".repeat(depth)}${depth ? "↳ " : ""}${esc(t.title)}${t.description ? " · " + esc(t.description.slice(0, 40)) : ""}</option>` + taskOptions(p, selected, exclude, t.id, depth + 1)
+  ).join("");
+}
+function folderOptions(p, selected, exclude = [], parent = null, depth = 0) {
+  return p.folders.filter(f => f.parentId === parent && !exclude.includes(f.id)).sort(byName).map(f =>
+    `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${"    ".repeat(depth)}${depth ? "↳ " : ""}${esc(f.name)}</option>` + folderOptions(p, selected, exclude, f.id, depth + 1)
+  ).join("");
+}
+
+/* =========================================================
+   Render
+   ========================================================= */
+const P = () => S.view.name === "project" ? S.projects[S.view.id] : null;
+function render() {
+  if (drag && !drag.justEnded) return; /* no redibujar mientras se arrastra; endDrag redibuja */
+  const app = $("#app");
+  const ae = document.activeElement;
+  const key = ae && ae.dataset ? ae.dataset.key : null;
+  let sel = null; if (key) { try { sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) { } }
+  let html;
+  if (S.auth !== "in") html = renderAuth();
+  else if (!S.loaded) html = `<div class="wrap">${topHome()}<div class="loading">${S.slow ? "No se puede acceder a los datos todavía. Comprueba tu conexión; la app seguirá intentándolo." : "Cargando proyectos…"}</div></div>`;
+  else if (S.view.name === "project") html = renderProject(P());
+  else html = renderHome();
+  app.innerHTML = html;
+  if (key) { const el = app.querySelector(`[data-key="${key}"]`); if (el) { el.focus({ preventScroll: true }); if (sel && sel[0] != null) { try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { } } } }
+  updateSync();
+}
+function banner() {
+  let b = "";
+  if (S.error) b += `<div class="banner">${esc(S.error)}</div>`;
+  else if (S.slow && S.loaded && navigator.onLine) b += `<div class="banner">Mostrando los datos guardados en este dispositivo: todavía no se ha podido contactar con tu cuenta.</div>`;
+  return b;
+}
+function avatarBtn() {
+  const u = S.user || {};
+  const init = esc((u.name || u.email || "?").trim().charAt(0).toUpperCase());
+  return `<button class="avatar" data-act="account" title="${esc(u.email || "Cuenta")}" ${u.photo ? `style="background-image:url('${esc(u.photo)}')"` : ""}>${u.photo ? "" : init}</button>`;
+}
+function topHome() {
+  return `<header class="top"><div class="top-l"><div class="brand" data-act="home"><span class="logo">${ic("logo")}</span>LiteProyect</div></div>
+  <div class="top-l"><span id="sync" class="sync"></span><button class="btn primary" data-act="project-new">${ic("plus")}<span>Nuevo proyecto</span></button>${avatarBtn()}</div></header>`;
+}
+function renderAuth() {
+  const card = inner => `<div class="auth"><div class="auth-card"><span class="logo">${ic("logo")}</span><h1>LiteProyect</h1>${inner}</div></div>`;
+  if (S.auth === "setup") return card(`<p>Falta conectar la app con tu proyecto de Firebase.</p>
+    <ul><li>Abre el archivo <code>firebase-config.js</code>.</li><li>Pega los datos de configuración de tu proyecto de Firebase (paso 3 de la guía).</li><li>Vuelve a subir el archivo y recarga esta página.</li></ul>`);
+  if (S.auth === "fatal") return card(`<p>${esc(S.fatal || "No se pudo iniciar la app.")}</p><button class="btn primary" data-act="reload">Reintentar</button>`);
+  if (S.auth === "out") return card(`<p>Tus proyectos se guardan en tu cuenta de Google y se sincronizan entre tus dispositivos. La app funciona también sin conexión.</p>
+    <button class="btn primary" data-act="sign-in">Continuar con Google</button>
+    <p style="font-size:12.5px" class="faint">Si cambias de móvil, inicia sesión con la misma cuenta y tendrás todos tus datos.</p>`);
+  return `<div class="loading">Cargando…</div>`;
+}
+const imgStyle = id => S.images[id] ? `style="background-image:url('${S.images[id]}')"` : "";
+
+/* ---------- Inicio ---------- */
+function renderHome() {
+  const list = Object.values(S.projects);
+  const counts = { todos: list.length, curso: 0, futuro: 0, finalizado: 0 };
+  list.forEach(p => counts[p.status]++);
+  const q = norm(S.homeQ);
+  const shown = (S.filter === "todos" ? list : list.filter(p => p.status === S.filter))
+    .filter(p => !q || norm(p.name + " " + p.description).includes(q))
+    .sort((a, b) => PORDER[a.status] - PORDER[b.status] || b.updatedAt - a.updatedAt);
+  const all = list.map(p => ({ p, m: metrics(p) }));
+  const active = all.filter(x => x.p.status !== "finalizado");
+  const late = sum(active.map(x => x.m.worksLate));
+  const stats = `<section class="stats">
+    <div class="stat"><small>En curso</small><b>${counts.curso}</b><em>${counts.futuro} futuros · ${counts.finalizado} finalizados</em></div>
+    <div class="stat"><small>Gasto total</small><b class="money">${money(sum(all.map(x => x.m.spent)))}</b><em>Presupuestado ${money(sum(all.map(x => x.m.budgeted)))}</em></div>
+    <div class="stat"><small>Trabajos pendientes</small><b>${sum(active.map(x => x.m.worksOpen))}</b><em ${late ? 'class="over"' : ""}>${late ? `${late} atrasados` : "Ninguno atrasado"}</em></div>
+    <div class="stat"><small>Elementos por comprar</small><b>${sum(active.map(x => x.m.pendingItems))}</b><em>${money(sum(active.map(x => x.m.pendAmt)))} previstos</em></div></section>`;
+  const chips = `<div class="homebar"><div class="chips">${[["todos", "Todos"], ["curso", "En curso"], ["futuro", "Futuros"], ["finalizado", "Finalizados"]].map(([k, l]) =>
+    `<button class="chip ${S.filter === k ? "on" : ""}" data-act="filter" data-id="${k}">${l}<span>${counts[k]}</span></button>`).join("")}</div>
+    <div class="search">${ic("search")}<input data-key="home-q" data-inp="home-q" value="${esc(S.homeQ)}" placeholder="Buscar proyecto"></div></div>`;
+  let body;
+  if (!list.length) body = `<div class="empty"><h3>Aún no hay proyectos</h3><p>Crea tu primer proyecto: una reforma, un mueble, un arreglo en casa…</p><button class="btn primary" data-act="project-new">${ic("plus")}Nuevo proyecto</button></div>`;
+  else if (!shown.length) body = `<div class="empty"><h3>Nada por aquí</h3><p>No hay proyectos que coincidan.</p></div>`;
+  else body = `<div class="grid">${shown.map(p => projectCard(p, metrics(p))).join("")}</div>`;
+  return `<div class="wrap">${topHome()}${banner()}${list.length ? stats + upcoming(active.map(x => x.p)) + chips : ""}${body}${footerTools()}</div>`;
+}
+function upcoming(projects) {
+  const td = today(); const rows = [];
+  projects.forEach(p => p.works.forEach(w => { const u = wUrgency(w, td); if (u === "late" || u === "today" || u === "soon") rows.push({ p, w, u }); }));
+  if (!rows.length) return "";
+  const ord = { late: 0, today: 1, soon: 2 };
+  rows.sort((a, b) => ord[a.u] - ord[b.u] || (wRange(a.w)[0] || "").localeCompare(wRange(b.w)[0] || ""));
+  return `<div class="section-h"><h2>Próximos trabajos</h2><span class="muted" style="font-size:13px">Atrasados, de hoy y de los próximos 7 días</span></div>
+  <div class="upc">${rows.slice(0, 8).map(({ p, w, u }) => `<div class="urow">
+    <div class="wseg">${statusSeg(p.id, w)}</div>
+    <div class="ut" data-act="open-works" data-id="${p.id}"><b>${esc(w.title)}</b><small>${esc(p.name)}${w.tags.length ? " · " + w.tags.map(esc).join(", ") : ""}</small></div>
+    ${workDate(w, u)}</div>`).join("")}
+    ${rows.length > 8 ? `<div class="urow"><span class="muted" style="font-size:13px">Y ${rows.length - 8} más en los tableros de trabajos de cada proyecto.</span></div>` : ""}</div>
+  <div class="section-h"><h2>Proyectos</h2></div>`;
+}
+function footerTools() {
+  return `<div class="footer-tools"><span>Copia de seguridad:</span>
+    <button class="btn sm" data-act="backup-export">${ic("download")}Exportar todo (.json)</button>
+    <button class="btn sm" data-act="backup-import">${ic("upload")}Importar copia</button></div>`;
+}
+function projectCard(p, m) {
+  const over = m.budgeted > 0 ? m.spent > m.budgeted + EPS : (p.budget != null && m.spent > p.budget + EPS);
+  const late = p.status !== "finalizado" && p.plannedEndDate && p.plannedEndDate < today();
+  const date = p.status === "finalizado" && p.endDate ? "Finalizado " + fmtShort(p.endDate) : p.plannedEndDate ? `<span ${late ? 'class="over"' : ""}>Previsto ${fmtShort(p.plannedEndDate)}</span>` : p.startDate ? "Inicio " + fmtShort(p.startDate) : "";
+  const ref = m.budgeted || p.budget;
+  return `<article class="pcard" data-act="open" data-id="${p.id}">
+    ${S.images[p.id] ? `<div class="pc-cover" ${imgStyle(p.id)}></div>` : ""}
+    <div class="pc-in">
+    <div class="pc-top"><span class="pill st-${p.status}">${PSTATUS[p.status]}</span><span class="pc-date">${date}</span></div>
+    <h3>${esc(p.name)}</h3>
+    ${p.description ? `<p class="pc-desc">${esc(p.description)}</p>` : ""}
+    <div class="pc-prog"><div class="bar ${m.pct === 100 ? "ok" : ""}"><i style="width:${m.pct}%"></i></div><span>${m.leaves ? `${m.done}/${m.leaves} tareas` : "Sin tareas"}</span></div>
+    <div class="pc-foot">
+      <div><small>Coste real</small><b class="money ${over ? "over" : ""}">${money(m.spent)}</b>${ref ? `<em> / ${money(ref)}</em>` : ""}</div>
+      <div><small>Trabajos</small><b ${m.worksLate ? 'class="over"' : ""}>${m.worksOpen}</b><em> pend.</em></div>
+      <div><small>Por comprar</small><b>${m.pendingItems}</b><em> / ${m.items}</em></div>
+    </div></div></article>`;
+}
+
+/* ---------- Proyecto ---------- */
+function renderProject(p) {
+  if (!p) return `<div class="wrap">${topHome()}<div class="empty"><h3>Proyecto no encontrado</h3><p>Puede que se haya eliminado.</p><button class="btn" data-act="home">Volver a proyectos</button></div></div>`;
+  const m = metrics(p), td = today();
+  const tab = S.ui.tab[p.id] || "tareas";
+  const ref = m.budgeted > 0 ? m.budgeted : p.budget;
+  const over = ref ? m.spent > ref + EPS : false;
+  const late = p.status !== "finalizado" && p.plannedEndDate && p.plannedEndDate < td;
+  const dates = [p.startDate && `<span>${ic("play").replace("<svg", '<svg width="12" height="12"')} Inicio ${fmtDate(p.startDate)}</span>`,
+  p.plannedEndDate && `<span ${late ? 'class="over"' : ""}>Fin previsto ${fmtDate(p.plannedEndDate)}${late ? " · retrasado" : ""}</span>`,
+  p.endDate && `<span class="good">Finalizado ${fmtDate(p.endDate)}</span>`].filter(Boolean).join("");
+  const head = `<header class="top"><div class="top-l"><button class="icon-btn" data-act="home" title="Volver">${ic("back")}</button><div class="brand" data-act="home"><span class="logo">${ic("logo")}</span><span>Proyectos</span></div></div>
+    <div class="top-l"><span id="sync" class="sync"></span><button class="icon-btn" data-act="project-dup" title="Duplicar como plantilla">${ic("copy")}</button><button class="icon-btn" data-act="project-edit" title="Editar proyecto">${ic("edit")}</button><button class="icon-btn del" data-act="project-del" title="Eliminar proyecto">${ic("trash")}</button></div></header>
+    ${banner()}
+    ${p.status === "finalizado" ? `<div class="banner info">Proyecto finalizado: se conserva toda su información, costes y lista de compra.</div>` : ""}
+    <div class="phead">${S.images[p.id] ? `<div class="phead-img" ${imgStyle(p.id)}></div>` : ""}<div style="min-width:0">
+      <select class="status-select st-${p.status}" data-chg="pstatus" aria-label="Estado">${Object.entries(PSTATUS).map(([k, l]) => `<option value="${k}" ${k === p.status ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <h1>${esc(p.name)}</h1>${p.description ? `<p>${esc(p.description)}</p>` : ""}${dates ? `<div class="dates">${dates}</div>` : ""}
+    </div></div>
+    <section class="kpis">
+      <div class="kpi"><small>Progreso</small><b>${m.pct}%</b><div class="bar ${m.pct === 100 ? "ok" : ""}"><i style="width:${m.pct}%"></i></div><span>${m.leaves ? `${m.done} de ${m.leaves} tareas hechas` : "Añade tareas para seguir el avance"}${m.lateTasks ? ` · <span class="over">${m.lateTasks} con retraso</span>` : ""}</span></div>
+      <div class="kpi"><small>Coste real</small><b class="money ${over ? "over" : ""}">${money(m.spent)}</b>${ref ? `<div class="bar ${over ? "over" : "acc"}"><i style="width:${Math.min(100, m.spent / ref * 100)}%"></i></div>` : ""}
+        <span>Presupuestado ${money(m.budgeted)}${p.budget != null ? ` · presupuesto ${money(p.budget)}` : ""}</span></div>
+      <div class="kpi"><small>Trabajos</small><b>${m.worksOpen} <em>pendientes</em></b><span>${m.worksLate ? `<span class="over">${m.worksLate} atrasados</span> · ` : ""}${m.worksSoon} para hoy o esta semana</span></div>
+      <div class="kpi"><small>Acopio</small><b>${m.pendingItems} <em>por comprar</em></b>${m.items ? `<div class="bar ok"><i style="width:${m.doneItems / m.items * 100}%"></i></div>` : ""}<span>${m.items ? `${m.doneItems} de ${m.items} completos${m.pendAmt ? ` · ${money(m.pendAmt)} pendientes` : ""}` : "Lista vacía"}</span></div>
+    </section>
+    <nav class="tabs">
+      ${tabBtn("tareas", "tasks", "Tareas", p.tasks.length, m.lateTasks)}
+      ${tabBtn("trabajos", "works", "Trabajos", m.worksOpen, m.worksLate)}
+      ${tabBtn("costes", "coins", "Costes", p.costs.length)}
+      ${tabBtn("acopio", "box", "Acopio", m.pendingItems)}
+    </nav>`;
+  function tabBtn(k, icon, label, n, alert) { return `<button class="tab ${tab === k ? "on" : ""}" data-act="tab" data-id="${k}">${ic(icon)}${label}<span class="n ${alert && tab !== k ? "alert" : ""}">${n}</span></button>`; }
+  const body = tab === "costes" ? costsTab(p) : tab === "acopio" ? acopioTab(p) : tab === "trabajos" ? worksTab(p) : tasksTab(p);
+  return `<div class="wrap">${head}${body}</div>`;
+}
+
+/* ---------- Tareas ---------- */
+function tasksTab(p) {
+  const tb = `<div class="toolbar"><h2>Tareas</h2><div class="tb-actions">
+    <label class="switch"><input type="checkbox" data-chg="hide-done" ${S.ui.hideDone ? "checked" : ""}><span>Ocultar hechas</span></label>
+    <button class="btn primary sm" data-act="task-new">${ic("plus")}Nueva tarea</button></div></div>`;
+  const quick = `<div class="quick"><input data-quick="task" data-key="quick-task" placeholder="Añadir tarea rápida: escribe el código o nombre y pulsa Enter"></div>`;
+  if (!p.tasks.length) return tb + `<div class="empty"><h3>Sin tareas</h3><p>Divide el proyecto en fases o tareas y subtareas. Después podrás reordenarlas arrastrándolas.</p><button class="btn primary" data-act="task-new">${ic("plus")}Añadir la primera tarea</button></div>` + quick;
+  const rows = taskRows(p, null, 0);
+  return tb + (rows ? `<div class="ttable" id="ttable"><div class="thead"><span></span><span></span><span>Código / tarea</span><span>Descripción</span><span>Prioridad</span><span>Fecha</span><span class="r">Real / Presup.</span><span></span></div><div class="drop-ind"></div>${rows}</div>` : `<div class="empty"><h3>Todo hecho</h3><p>Todas las tareas están terminadas.</p></div>`) + quick
+    + `<p class="faint" style="font-size:12.5px;margin:10px 2px 0">Arrastra ${ic("grip").replace("<svg", '<svg width="12" height="12" style="vertical-align:-2px"')} para reordenar. Suelta en el centro de otra tarea para convertirla en subtarea.</p>`;
+}
+function taskDates(t, td) {
+  if (t.status === "hecha" && t.endDate) return `<span class="dt ok" title="Finalizada el ${fmtDate(t.endDate)}">${ic("check")}${fmtShort(t.endDate)}</span>`;
+  const tip = [t.startDate && "Inicio " + fmtDate(t.startDate), t.dueDate && "Prevista " + fmtDate(t.dueDate)].filter(Boolean).join(" · ");
+  if (t.dueDate) { const late = t.dueDate < td; return `<span class="dt ${late ? "late" : ""}" title="${tip}">${ic(late ? "alert" : "cal")}${fmtShort(t.dueDate)}</span>`; }
+  if (t.startDate) return `<span class="dt" title="${tip}">${ic("play")}${fmtShort(t.startDate)}</span>`;
+  return `<span class="dt none">—</span>`;
+}
+function taskRows(p, parentId, depth) {
+  const ix = IX(p), td = today();
+  return kidsOf(p, parentId).map(t => {
+    const ch = kidsOf(p, t.id);
+    if (S.ui.hideDone && t.status === "hecha" && descendants(p, t.id).every(id => ix.tasks.get(id).status === "hecha")) return "";
+    const collapsed = S.ui.collapsedT.has(t.id);
+    const real = ix.real.get(t.id) || 0, bud = ix.bud.get(t.id) || 0;
+    const lv = ix.leaves.get(t.id) || [0, 0];
+    const cost = real || bud ? `<span class="tc"><b class="money ${bud && real > bud + EPS ? "over" : ""}">${money(real)}</b>${bud ? `<small>/ ${money(bud)}</small>` : ""}</span>` : `<span class="tc faint">—</span>`;
+    return `<div class="trow ts-${t.status} ${depth ? "child" : ""}" data-id="${t.id}" style="--d:${depth}">
+      <span class="drag" data-drag="${t.id}" title="Arrastrar para reordenar">${ic("grip")}</span>
+      <button class="tcheck" data-act="task-cycle" data-id="${t.id}" title="${TSTATUS[t.status]} · pulsa para cambiar">${t.status === "hecha" ? ic("check") : ""}</button>
+      <div class="tname"><button class="caret ${ch.length ? "" : "hidden"} ${collapsed ? "" : "open"}" data-act="task-toggle" data-id="${t.id}" aria-label="Plegar">${ic("chev")}</button><span class="ttitle" data-act="task-edit" data-id="${t.id}">${esc(t.title)}${ch.length ? `<span class="tsub">${lv[0]}/${lv[1]}</span>` : ""}</span></div>
+      <div class="tdesc" data-act="task-edit" data-id="${t.id}">${esc(t.description)}</div>
+      <div class="tmeta"><span class="prio p-${t.priority}"><i></i>${PRIO[t.priority]}</span>${taskDates(t, td)}${cost}</div>
+      <div class="racts"><button class="icon-btn" data-act="task-sub" data-id="${t.id}" title="Añadir subtarea">${ic("plus")}</button><button class="icon-btn del" data-act="task-del" data-id="${t.id}" title="Eliminar">${ic("trash")}</button></div>
+    </div>${collapsed ? "" : taskRows(p, t.id, depth + 1)}`;
+  }).join("");
+}
+
+/* ---------- Trabajos ---------- */
+function statusSeg(pid, w) {
+  return [["pendiente", "circle"], ["curso", "half"], ["hecho", "check"]].map(([s, i]) =>
+    `<button class="s-${s} ${w.status === s ? "on" : ""}" data-act="work-status" data-id="${pid}|${w.id}|${s}" title="${WSTATUS[s]}">${ic(i)}</button>`).join("");
+}
+function workDate(w, u) {
+  const [a, b] = wRange(w);
+  if (w.status === "hecho") return `<span class="wdate">${ic("check")}${w.doneDate ? fmtShort(w.doneDate) : "Hecho"}</span>`;
+  if (!a) return `<span class="wdate nodate">Sin fecha</span>`;
+  const td = today();
+  let label = a === b ? fmtShort(a) : `${fmtShort(a)} – ${fmtShort(b)}`;
+  if (u === "today") label = (a === td && b === td) ? "Hoy" : "En curso · hasta " + fmtShort(b);
+  else if (u === "soon" && a === addDays(td, 1)) label = "Mañana";
+  if (u === "late") label = "Atrasado · " + fmtShort(b);
+  return `<span class="wdate ${u}">${ic(u === "late" ? "alert" : "cal")}${label}</span>`;
+}
+function filterWorks(p, f) {
+  const q = norm(f.q), td = today(); const tags = f.tags.map(norm);
+  return p.works.filter(w => {
+    if (q && !norm(w.title + " " + w.description).includes(q)) return false;
+    if (tags.length && !w.tags.some(t => tags.includes(norm(t)))) return false;
+    if (f.from || f.to) { const [a, b] = wRange(w); if (!a) return false; if (f.from && b < f.from) return false; if (f.to && a > f.to) return false; }
+    if (f.when) { const u = wUrgency(w, td); if (f.when === "soon" ? !(u === "soon" || u === "today") : u !== f.when) return false; }
+    return true;
+  });
+}
+const allTags = p => { const m = new Map(); p.works.forEach(w => w.tags.forEach(t => { const k = norm(t); if (!m.has(k)) m.set(k, t); })); return [...m.values()].sort((a, b) => a.localeCompare(b, "es")); };
+function worksTab(p) {
+  const f = workF(p.id), td = today();
+  const tb = `<div class="toolbar"><h2>Trabajos</h2><div class="tb-actions"><button class="btn primary sm" data-act="work-new">${ic("plus")}Nuevo trabajo</button></div></div>`;
+  const quick = `<div class="quick" style="margin:0 0 14px"><input data-quick="work" data-key="quick-work" placeholder="Trabajo rápido: escribe y pulsa Enter (p. ej. «Cortar el césped #jardín»)"></div>`;
+  if (!p.works.length) return tb + quick + `<div class="empty"><h3>Sin trabajos</h3><p>Apunta actuaciones concretas: cortar el césped, retirar escombros, instalar una puerta… Puedes etiquetarlas, planificarlas y vincularlas a una tarea.</p><button class="btn primary" data-act="work-new">${ic("plus")}Añadir trabajo</button></div>`;
+  const cnt = { late: 0, today: 0, soon: 0, nodate: 0 };
+  p.works.forEach(w => { const u = wUrgency(w, td); if (u === "late") cnt.late++; else if (u === "today") { cnt.today++; cnt.soon++; } else if (u === "soon") cnt.soon++; else if (u === "nodate") cnt.nodate++; });
+  const hlBtn = (k, label, n) => `<button class="${k} ${f.when === k ? "on" : ""}" data-act="work-when" data-id="${k}"><b>${n}</b>${label}</button>`;
+  const highlights = `<div class="whl">${hlBtn("late", "Atrasados", cnt.late)}${hlBtn("today", "Para hoy", cnt.today)}${hlBtn("soon", "Próximos 7 días", cnt.soon)}${hlBtn("nodate", "Sin fecha", cnt.nodate)}</div>`;
+  const tags = allTags(p);
+  const active = f.q || f.from || f.to || f.tags.length || f.when;
+  const filters = `<div class="filters">
+    <div class="search">${ic("search")}<input data-key="works-q" data-inp="works-q" value="${esc(f.q)}" placeholder="Buscar por nombre o descripción"></div>
+    <label class="dl">Desde <input type="date" class="fin" data-chg="works-from" value="${f.from}"></label>
+    <label class="dl">Hasta <input type="date" class="fin" data-chg="works-to" value="${f.to}"></label>
+    ${active ? `<button class="btn sm" data-act="works-clear">${ic("x")}Limpiar filtros</button>` : ""}
+  </div>${tags.length ? `<div class="filters"><span class="muted" style="font-size:12.5px;font-weight:700">Tags</span><div class="tagbar">${tags.map(t => { const on = f.tags.some(x => norm(x) === norm(t)); return `<span class="tag ${on ? tagClass(t) : "off"}" data-act="work-tag" data-id="${esc(t)}">${esc(t)}</span>`; }).join("")}</div></div>` : ""}`;
+  const list = filterWorks(p, f);
+  const col = s => {
+    let ws = list.filter(w => w.status === s);
+    if (s === "hecho") ws.sort((a, b) => (b.doneDate || "").localeCompare(a.doneDate || "") || b.createdAt - a.createdAt);
+    else ws.sort((a, b) => (wRange(a)[0] || "9999").localeCompare(wRange(b)[0] || "9999") || a.createdAt - b.createdAt);
+    const total = ws.length; let more = "";
+    if (s === "hecho" && !S.ui.allDone && ws.length > 8) { more = `<button class="link" style="align-self:center" data-act="works-alldone">Ver los ${total} realizados</button>`; ws = ws.slice(0, 8); }
+    return `<div class="wcol"><div class="wcol-h"><span>${WSTATUS[s]}</span><span class="tag ${s === "curso" ? "acc" : s === "hecho" ? "ok" : ""}">${total}</span></div>
+      ${ws.length ? ws.map(w => workCard(p, w, f)).join("") : `<div class="wempty">${active ? "Nada con estos filtros" : "Vacío"}</div>`}${more}</div>`;
+  };
+  return tb + quick + highlights + filters + `<div class="board">${col("pendiente")}${col("curso")}${col("hecho")}</div>`;
+}
+function workCard(p, w, f) {
+  const u = wUrgency(w, today()), q = norm(f.q);
+  return `<div class="wcard ${u} ${w.status === "hecho" ? "done" : ""}">
+    <div class="wc-top">${workDate(w, u)}${w.recur ? `<span class="rec" title="Se repite cada ${plural(w.recur.n, RECUR[w.recur.u][0], RECUR[w.recur.u][1])}">${ic("repeat")}</span>` : ""}</div>
+    <div class="wc-title" data-act="work-edit" data-id="${w.id}">${hl(w.title, q)}</div>
+    ${w.description ? `<div class="wc-desc" data-act="work-edit" data-id="${w.id}">${hl(w.description, q)}</div>` : ""}
+    ${w.tags.length ? `<div class="wc-tags">${w.tags.map(t => `<span class="tag ${tagClass(t)}">${esc(t)}</span>`).join("")}</div>` : ""}
+    <div class="wc-foot"><span class="wc-task">${w.taskId ? esc(taskPath(p, w.taskId)) : ""}</span><div class="wseg">${statusSeg(p.id, w)}</div></div>
+  </div>`;
+}
+
+/* ---------- Costes ---------- */
+function filteredCosts(p) {
+  const f = costF(p.id), q = norm(f.q);
+  let costs = p.costs.slice();
+  if (f.task === "__none") costs = costs.filter(c => !c.taskId);
+  else if (f.task) { const ids = new Set([f.task, ...descendants(p, f.task)]); costs = costs.filter(c => ids.has(c.taskId)); }
+  if (f.from) costs = costs.filter(c => c.date && c.date >= f.from);
+  if (f.to) costs = costs.filter(c => c.date && c.date <= f.to);
+  if (f.origin === "buy") costs = costs.filter(c => c.itemId); else if (f.origin === "manual") costs = costs.filter(c => !c.itemId);
+  if (q) costs = costs.filter(c => norm(c.concept + " " + c.docNumber).includes(q));
+  return costs.sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.createdAt || 0) - (a.createdAt || 0));
+}
+function costsTab(p) {
+  const f = costF(p.id);
+  const active = f.task || f.from || f.to || f.q || f.origin;
+  const tb = `<div class="toolbar"><h2>Costes</h2><div class="tb-actions">
+    ${p.costs.length ? `<button class="btn sm" data-act="costs-export">${ic("download")}CSV</button>` : ""}
+    <button class="btn primary sm" data-act="cost-new">${ic("plus")}Añadir gasto</button></div></div>`;
+  if (!p.costs.length) return tb + `<div class="empty"><h3>Sin gastos registrados</h3><p>Registra facturas y tickets, o compra elementos desde la lista de acopio.</p><button class="btn primary" data-act="cost-new">${ic("plus")}Añadir gasto</button></div>`;
+  const filters = `<div class="filters">
+    <div class="search">${ic("search")}<input data-key="costs-q" data-inp="costs-q" value="${esc(f.q)}" placeholder="Concepto o nº documento"></div>
+    ${p.tasks.length ? `<select class="fin" data-chg="cost-task" aria-label="Tarea"><option value="">Todas las tareas</option><option value="__none" ${f.task === "__none" ? "selected" : ""}>Sin tarea asignada</option>${taskOptions(p, f.task)}</select>` : ""}
+    <select class="fin" data-chg="cost-origin" aria-label="Origen"><option value="">Todos los gastos</option><option value="buy" ${f.origin === "buy" ? "selected" : ""}>Solo compras de acopio</option><option value="manual" ${f.origin === "manual" ? "selected" : ""}>Solo gastos manuales</option></select>
+    <label class="dl">Desde <input type="date" class="fin" data-chg="cost-from" value="${f.from}"></label>
+    <label class="dl">Hasta <input type="date" class="fin" data-chg="cost-to" value="${f.to}"></label>
+    ${active ? `<button class="btn sm" data-act="costs-clear">${ic("x")}Limpiar</button>` : ""}</div>`;
+  const costs = filteredCosts(p);
+  const total = round(sum(costs.map(c => c.amount)));
+  const m = metrics(p);
+  const ref = m.budgeted > 0 ? m.budgeted : p.budget;
+  const over = ref && total > ref + EPS;
+  let summary = `<div class="panel"><div class="csum"><div><small>${active ? "Total filtrado" : "Total gastado"}</small><b class="money">${money(total)}</b><div style="font-size:12.5px;color:var(--muted)">${plural(costs.length, "registro")}</div></div>
+    ${!active && ref ? `<div class="budget"><div style="display:flex;justify-content:space-between;gap:10px"><span>${m.budgeted > 0 ? "Presupuestado" : "Presupuesto"} ${money(ref)}</span><span ${over ? 'class="over"' : ""}>${Math.round(total / ref * 100)}%</span></div><div class="bar ${over ? "over" : "acc"}"><i style="width:${Math.min(100, total / ref * 100)}%"></i></div>${p.budget != null && m.budgeted > 0 ? `<span>Presupuesto del proyecto ${money(p.budget)}</span>` : ""}</div>` : ""}</div>`;
+  if (!active && p.tasks.length) {
+    const ix = IX(p);
+    const roots = kidsOf(p, null).map(t => ({ id: t.id, name: t.title + (t.description ? " · " + t.description : ""), v: ix.real.get(t.id) || 0, b: ix.bud.get(t.id) || 0 })).filter(x => x.v > 0 || x.b > 0);
+    const none = round(sum(p.costs.filter(c => !c.taskId).map(c => c.amount)));
+    if (none > 0) roots.push({ id: "__none", name: "Sin tarea", v: none, b: 0 });
+    const max = Math.max(...roots.map(r => Math.max(r.v, r.b)), 1);
+    if (roots.length) summary += `<div class="brk"><h4><span>Por tarea</span><span>Real / presupuestado</span></h4>${roots.map(r => `<div class="brow" data-act="cost-task-set" data-id="${r.id}"><span class="bname">${esc(r.name)}</span><div class="bar ${r.b && r.v > r.b ? "over" : ""}"><i style="width:${r.v / max * 100}%"></i></div><span class="bv money"><b class="${r.b && r.v > r.b + EPS ? "over" : ""}">${money(r.v)}</b>${r.b ? ` <small>/ ${money(r.b)}</small>` : ""}</span></div>`).join("")}</div>`;
+  }
+  summary += `</div>`;
+  if (!costs.length) return tb + filters + summary + `<div class="empty" style="margin-top:14px"><p>No hay gastos con estos filtros.</p></div>`;
+  const groups = {};
+  costs.forEach(c => { const k = (c.date || "0000-00").slice(0, 7); (groups[k] = groups[k] || []).push(c); });
+  const q = norm(f.q);
+  const list = Object.entries(groups).map(([k, arr]) => `<div class="mhd"><span>${k === "0000-00" ? "Sin fecha" : fmtMonth(k)}</span><span class="money">${money(sum(arr.map(c => c.amount)))}</span></div>` + arr.map(c => costRow(p, c, q)).join("")).join("");
+  return tb + filters + summary + `<div class="panel">${list}</div>`;
+}
+function costRow(p, c, q) {
+  const dm = c.date ? fmtDayMon(c.date) : null;
+  const item = c.itemId ? p.items.find(i => i.id === c.itemId) : null;
+  const meta = [];
+  if (c.itemId && c.qty) meta.push(`<span class="tag blue">${ic("cart")}Compra · ${num(c.qty)} ${esc(item ? item.unit : "")}${c.unitPrice != null ? ` × ${money(c.unitPrice)}` : ""}</span>`);
+  if (c.taskId) meta.push(`<span>${esc(taskPath(p, c.taskId))}</span>`);
+  if (c.docNumber) meta.push(`<span>Doc. ${hl(c.docNumber, q)}</span>`);
+  return `<div class="crow"><div class="cdate">${dm ? `<b>${dm.day}</b><small>${dm.mon}</small>` : "—"}</div>
+    <div class="cmain" data-act="cost-edit" data-id="${c.id}"><div class="ctitle">${hl(c.concept, q)}</div><div class="cmeta">${meta.join("")}</div></div>
+    <div class="camt money">${money(c.amount)}</div>
+    <div class="racts"><button class="icon-btn" data-act="cost-edit" data-id="${c.id}" title="Editar">${ic("edit")}</button><button class="icon-btn del" data-act="cost-del" data-id="${c.id}" title="Eliminar">${ic("trash")}</button></div></div>`;
+}
+
+/* ---------- Acopio ---------- */
+function acopioTab(p) {
+  const m = metrics(p);
+  const q = S.ui.aq[p.id] || "";
+  const tb = `<div class="toolbar"><h2>Lista de compra y acopio</h2><div class="tb-actions">
+    <label class="switch"><input type="checkbox" data-chg="only-pending" ${S.ui.onlyPending ? "checked" : ""}><span>Solo pendientes</span></label>
+    <button class="btn sm" data-act="folder-new">${ic("folderPlus")}Carpeta</button>
+    <button class="btn primary sm" data-act="item-new">${ic("plus")}Elemento</button></div></div>`;
+  const quick = `<div class="quick"><input data-quick="item" data-key="quick-item" placeholder="Elemento rápido en la raíz: «Tornillos 4x40, 200 ud» y pulsa Enter"></div>`;
+  if (!p.items.length && !p.folders.length) return tb + `<div class="empty"><h3>Lista vacía</h3><p>Apunta materiales, herramientas y productos con su cantidad y coste previsto. Agrúpalos en carpetas si quieres.</p><button class="btn primary" data-act="item-new">${ic("plus")}Añadir elemento</button></div>` + quick;
+  const spent = sum(p.costs.filter(c => c.itemId).map(c => c.amount));
+  const expected = sum(p.items.map(i => itemState(p, i).expected || 0));
+  const sumr = `<div class="asum"><span class="tag">${plural(m.items, "elemento")}</span><span class="tag ok">${m.doneItems} completos</span><span class="tag warn">${m.pendingItems} por comprar</span><span class="tag blue">Comprado ${money(spent)}</span>${expected ? `<span class="tag">Previsto ${money(expected)}</span><span class="tag acc">Pendiente ${money(m.pendAmt)}</span>` : ""}</div>`;
+  const search = `<div class="filters"><div class="search">${ic("search")}<input data-key="acopio-q" data-inp="acopio-q" value="${esc(q)}" placeholder="Buscar en la lista"></div></div>`;
+  const tree = folderContents(p, null, 0, false, norm(q));
+  return tb + sumr + search + (tree ? `<div class="panel">${tree}</div>` : `<div class="empty"><h3>${q ? "Sin resultados" : "Todo comprado"}</h3><p>${q ? "Ningún elemento coincide con la búsqueda." : "No queda nada pendiente de adquirir."}</p></div>`) + quick;
+}
+function folderContents(p, folderId, depth, forceAll, q) {
+  const folders = p.folders.filter(f => f.parentId === folderId).sort(byName);
+  const items = p.items.filter(i => i.folderId === folderId).sort(byCreated);
+  let html = "";
+  folders.forEach(f => {
+    const st = folderStats(p, f.id);
+    if (S.ui.onlyPending && st.pending === 0) return;
+    const selfMatch = q && norm(f.name).includes(q);
+    const collapsed = !q && S.ui.collapsedF.has(f.id);
+    const inner = collapsed ? "" : folderContents(p, f.id, depth + 1, forceAll || selfMatch, q);
+    if (q && !forceAll && !selfMatch && !inner) return;
+    const money1 = f.hideCost ? `<span class="faint">Coste oculto</span>` : `${st.spent ? `<span>Comprado <b style="color:var(--ink)">${money(st.spent)}</b></span>` : ""}${st.expected ? `<span>Previsto ${money(st.expected)}</span>` : ""}${st.pendAmt ? `<span style="color:var(--accent)">Pendiente ${money(st.pendAmt)}</span>` : ""}`;
+    html += `<div class="frow" style="--d:${depth}">
+      <button class="caret ${collapsed ? "" : "open"}" data-act="folder-toggle" data-id="${f.id}" aria-label="Plegar">${ic("chev")}</button>
+      <span class="fic">${ic("folder")}</span>
+      <div class="fname" data-act="folder-toggle" data-id="${f.id}"><b>${hl(f.name, q)}</b><small><span>${st.total ? (st.pending ? `${st.pending} pendiente${st.pending === 1 ? "" : "s"} de ${st.total}` : `${st.total} · completo`) : "vacía"}</span>${money1}</small></div>
+      <div class="racts"><button class="icon-btn" data-act="folder-eye" data-id="${f.id}" title="${f.hideCost ? "Mostrar" : "Ocultar"} coste acumulado">${ic(f.hideCost ? "eyeOff" : "eye")}</button><button class="icon-btn" data-act="item-new" data-id="${f.id}" title="Añadir elemento aquí">${ic("plus")}</button><button class="icon-btn" data-act="folder-new" data-id="${f.id}" title="Añadir subcarpeta">${ic("folderPlus")}</button><button class="icon-btn" data-act="folder-edit" data-id="${f.id}" title="Editar carpeta">${ic("edit")}</button><button class="icon-btn del" data-act="folder-del" data-id="${f.id}" title="Eliminar carpeta">${ic("trash")}</button></div>
+    </div>${inner}`;
+  });
+  items.forEach(i => {
+    const s = itemState(p, i);
+    if (S.ui.onlyPending && s.done) return;
+    if (q && !forceAll && !norm(i.name + " " + i.description).includes(q)) return;
+    const buys = (IX(p).buys.get(i.id) || []).slice().sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.createdAt || 0) - (b.createdAt || 0));
+    const open = S.ui.hist.has(i.id);
+    const pct = Math.min(100, s.acq / i.qtyNeeded * 100);
+    const moneyLine = [s.expected != null ? `<span>Previsto <b>${money(s.expected)}</b>${i.estPrice != null ? ` <span class="faint">(${money(i.estPrice)}/${esc(i.unit)})</span>` : ""}</span>` : "",
+    s.spent ? `<span>Comprado <b>${money(s.spent)}</b></span>` : "",
+    s.pendAmt ? `<span style="color:var(--accent)">Pendiente <b style="color:var(--accent)">${money(s.pendAmt)}</b></span>` : "",
+    s.dev ? `<span class="${s.dev > 0 ? "over" : "good"}">${s.dev > 0 ? "Sobrecoste" : "Ahorro"} ${money(Math.abs(s.dev))}</span>` : "",
+    i.taskId ? `<span class="tag">${esc(taskName(p, i.taskId))}</span>` : ""].filter(Boolean).join("");
+    html += `<div class="irow ${s.done ? "done" : ""}" style="--d:${depth}">
+      <span class="idot ${s.done ? "done" : s.part ? "part" : ""}"><i></i></span>
+      <div class="ibody">
+        <div><span class="ititle" data-act="item-edit" data-id="${i.id}">${hl(i.name, q)}</span>${i.url ? `<a class="ilink" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer" title="Abrir enlace del producto">${ic("link")}</a>` : ""}</div>
+        ${i.description ? `<div class="idesc">${hl(i.description, q)}</div>` : ""}
+        <div class="iqty"><div class="bar sm ${s.done ? "ok" : "acc"}"><i style="width:${pct}%"></i></div>
+          <span class="num"><b style="color:var(--ink)">${num(s.acq)}</b> / ${num(i.qtyNeeded)} ${esc(i.unit)}</span>
+          ${s.done ? `<span class="tag ok">Completo</span>` : `<span class="tag warn">Faltan ${num(s.pend)} ${esc(i.unit)}</span>`}
+          ${buys.length ? `<button class="link" data-act="item-hist" data-id="${i.id}">${open ? "Ocultar" : "Ver"} ${plural(buys.length, "compra")}</button>` : ""}
+        </div>
+        ${moneyLine ? `<div class="imoney">${moneyLine}</div>` : ""}
+      </div>
+      <div class="iacts"><button class="btn ${s.done ? "" : "soft"} sm" data-act="item-buy" data-id="${i.id}">${ic("cart")}Comprar</button>
+        <div class="racts"><button class="icon-btn" data-act="item-edit" data-id="${i.id}" title="Editar">${ic("edit")}</button><button class="icon-btn del" data-act="item-del" data-id="${i.id}" ${s.acq > EPS ? 'disabled title="No se puede eliminar: tiene compras registradas"' : 'title="Eliminar"'}>${ic("trash")}</button></div></div>
+    </div>`;
+    if (open && buys.length) html += `<div class="hist" style="--d:${depth}"><h5>Historial de adquisiciones</h5>${buys.map(b => `<div class="hrow">
+        <span class="hd">${fmtDate(b.date)}</span>
+        <span class="hm"><b>${num(b.qty)} ${esc(i.unit)}</b>${b.unitPrice != null ? ` × ${money(b.unitPrice)}` : ""}${b.taskId ? ` · ${esc(taskPath(p, b.taskId))}` : ""}${b.docNumber ? ` · Doc. ${esc(b.docNumber)}` : ""}</span>
+        <span class="ha money">${money(b.amount)}</span>
+        <span class="racts"><button class="icon-btn" data-act="cost-edit" data-id="${b.id}" title="Editar compra">${ic("edit")}</button><button class="icon-btn del" data-act="cost-del" data-id="${b.id}" title="Anular compra">${ic("trash")}</button></span></div>`).join("")}</div>`;
+  });
+  return html;
+}
+
+/* =========================================================
+   Modales
+   ========================================================= */
+const field = (label, input, hint = "") => `<label class="field"><span>${label}</span>${input}${hint ? `<small>${hint}</small>` : ""}</label>`;
+const selectOpts = (obj, sel) => Object.entries(obj).map(([k, l]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${l}</option>`).join("");
+function closeModal() { $("#modal-root").innerHTML = ""; document.removeEventListener("keydown", escClose); }
+function escClose(e) { if (e.key === "Escape") closeModal(); }
+function openModal({ title, body, submit = "Guardar", danger = false, onSubmit, onMount }) {
+  const root = $("#modal-root");
+  root.innerHTML = `<div class="overlay"><form class="modal" novalidate autocomplete="off">
+    <div class="mhead"><h3>${esc(title)}</h3><button type="button" class="icon-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="mbody">${body}</div>
+    <div class="mfoot"><span class="merr"></span><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn ${danger ? "danger" : "primary"}">${esc(submit)}</button></div></form></div>`;
+  const form = root.querySelector("form");
+  root.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
+  const ov = root.querySelector(".overlay");
+  let downOnOverlay = false;
+  ov.addEventListener("mousedown", e => { downOnOverlay = e.target === ov; });
+  ov.addEventListener("click", e => { if (e.target === ov && downOnOverlay) closeModal(); });
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const data = {};
+    new FormData(form).forEach((v, k) => data[k] = typeof v === "string" ? v : "");
+    let err;
+    try { err = onSubmit ? onSubmit(data, form) : null; } catch (ex) { console.error(ex); err = "Error inesperado: " + ex.message; }
+    if (err) { form.querySelector(".merr").textContent = err; return; }
+    closeModal();
+  });
+  document.addEventListener("keydown", escClose);
+  if (onMount) onMount(form);
+  setTimeout(() => { const f = form.querySelector("[autofocus]"); if (f && window.innerWidth > 760) { f.focus(); if (f.select && f.value) f.select(); } }, 40);
+}
+function confirmModal(title, msg, label, fn) { openModal({ title, body: `<p>${msg}</p>`, submit: label, danger: true, onSubmit() { return fn(); } }); }
+function infoModal(title, msg) { openModal({ title, body: `<p>${msg}</p>`, submit: "Entendido" }); }
+let toastT;
+function toast(msg, err = false) {
+  const t = $("#toast"); t.textContent = msg; t.className = "show" + (err ? " err" : "");
+  clearTimeout(toastT); toastT = setTimeout(() => t.className = err ? "err" : "", err ? 4000 : 2800);
+}
+/* Busca siempre los datos actuales (los objetos pueden renovarse al sincronizar) */
+const getP = pid => S.projects[pid];
+const find = (arr, id) => arr.find(x => x.id === id);
+const created = ts => ts ? `<p class="note">Registrado el ${fmtTs(ts)}</p>` : "";
+
+async function compressImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    let max = 1100, q = 0.8, out = "";
+    for (let k = 0; k < 7; k++) {
+      const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.naturalWidth * s)); c.height = Math.max(1, Math.round(img.naturalHeight * s));
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      out = c.toDataURL("image/jpeg", q);
+      if (out.length < 170000) break;
+      max = Math.round(max * 0.8); q = Math.max(0.5, q - 0.06);
+    }
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/* ---- Proyecto ---- */
+function projectModal(pid) {
+  const p = pid ? getP(pid) : null;
+  const isNew = !p; const v = p || { status: "curso", startDate: today() };
+  let img; // undefined = sin cambios; null = quitar; string = nueva
+  const cur = pid ? S.images[pid] : null;
+  openModal({
+    title: isNew ? "Nuevo proyecto" : "Editar proyecto", submit: isNew ? "Crear proyecto" : "Guardar",
+    body: `${field("Nombre", `<input name="name" value="${esc(v.name || "")}" placeholder="Ej. Reforma del baño" autofocus maxlength="120">`)}
+      ${field("Descripción", `<textarea name="description" rows="3" placeholder="Información adicional (opcional)">${esc(v.description || "")}</textarea>`)}
+      <div class="row2">${field("Estado", `<select name="status">${selectOpts(PSTATUS, v.status)}</select>`)}
+      ${field("Presupuesto estimado (€)", `<input name="budget" inputmode="decimal" value="${toInput(v.budget)}" placeholder="Opcional">`)}</div>
+      <div class="row3">${field("Fecha de inicio", `<input type="date" name="startDate" value="${v.startDate || ""}">`)}${field("Fin previsto", `<input type="date" name="plannedEndDate" value="${v.plannedEndDate || ""}">`)}${field("Fecha de finalización", `<input type="date" name="endDate" value="${v.endDate || ""}">`)}</div>
+      <div class="field"><span>Imagen identificativa</span><div class="imgpick"><div class="prev ${cur ? "has" : ""}" id="imgPrev" ${cur ? `style="background-image:url('${cur}')"` : ""}>${ic("image")}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn sm">${ic("upload")}Elegir imagen<input type="file" accept="image/*" id="imgFile"></label><button type="button" class="btn sm" id="imgDel" ${cur ? "" : 'style="display:none"'}>${ic("trash")}Quitar</button></div></div><small>Opcional. Se reduce automáticamente.</small></div>
+      ${!isNew ? created(p.createdAt) : ""}`,
+    onMount(form) {
+      const prev = form.querySelector("#imgPrev"), del = form.querySelector("#imgDel");
+      form.querySelector("#imgFile").addEventListener("change", async e => {
+        const f = e.target.files[0]; if (!f) return;
+        try { img = await compressImage(f); prev.style.backgroundImage = `url('${img}')`; prev.classList.add("has"); del.style.display = ""; }
+        catch (ex) { toast("No se pudo leer la imagen. Prueba con JPG o PNG.", true); }
+      });
+      del.addEventListener("click", () => { img = null; prev.style.backgroundImage = ""; prev.classList.remove("has"); del.style.display = "none"; });
+    },
+    onSubmit(d) {
+      const name = d.name.trim(); if (!name) return "Escribe un nombre.";
+      let budget = null; if (d.budget.trim()) { budget = parseNum(d.budget); if (!isFinite(budget) || budget < 0) return "Presupuesto no válido."; budget = round(budget); }
+      if (d.startDate && d.plannedEndDate && d.plannedEndDate < d.startDate) return "El fin previsto no puede ser anterior al inicio.";
+      if (d.startDate && d.endDate && d.endDate < d.startDate) return "La fecha de finalización no puede ser anterior al inicio.";
+      const fields = { name, description: d.description.trim(), status: d.status, budget, startDate: d.startDate, plannedEndDate: d.plannedEndDate, endDate: d.endDate };
+      if (fields.status === "finalizado" && !fields.endDate) fields.endDate = today();
+      if (!Store.canWrite()) return;
+      let id = pid;
+      if (isNew) { id = uid(); S.projects[id] = normalize({ ...fields, createdAt: Date.now() }, id); S.ui.tab[id] = "tareas"; go("p-" + id); toast("Proyecto creado"); }
+      else Object.assign(getP(pid), fields);
+      Store.save(id);
+      if (img !== undefined) Store.setImage(id, img);
+    }
+  });
+}
+function duplicateProject(pid) {
+  const src = getP(pid);
+  confirmModal("Duplicar como plantilla", `Se creará una copia de <b>${esc(src.name)}</b> con sus tareas, lista de acopio (sin compras) y trabajos, todo en estado pendiente. Los costes no se copian.`, "Duplicar", () => {
+    const p = getP(pid); if (!p) return;
+    const map = new Map(); const nid = old => { if (!old) return null; if (!map.has(old)) map.set(old, uid()); return map.get(old); };
+    const d = fullDoc(p);
+    const id = uid();
+    const copy = {
+      ...d, name: "Copia de " + p.name, status: "futuro", startDate: "", plannedEndDate: "", endDate: "", createdAt: Date.now(), costs: [],
+      tasks: d.tasks.map(t => ({ ...t, id: nid(t.id), parentId: nid(t.parentId), status: "pendiente", startDate: "", dueDate: "", endDate: "", createdAt: Date.now() })),
+      folders: d.folders.map(f => ({ ...f, id: nid(f.id), parentId: nid(f.parentId) })),
+      items: d.items.map(i => ({ ...i, id: nid(i.id), folderId: nid(i.folderId), taskId: nid(i.taskId) })),
+      works: d.works.map(w => ({ ...w, id: uid(), taskId: nid(w.taskId), status: "pendiente", doneDate: "", startDate: "", endDate: "", recurSpawned: false, createdAt: Date.now() }))
+    };
+    S.projects[id] = normalize(copy, id);
+    go("p-" + id); Store.save(id);
+    if (S.images[pid]) Store.setImage(id, S.images[pid]);
+    toast("Proyecto duplicado");
+  });
+}
+/* ---- Tarea ---- */
+function taskModal(pid, tid, parentId) {
+  const p = getP(pid); const t = tid ? find(p.tasks, tid) : null;
+  const isNew = !t; const v = t || { status: "pendiente", priority: "media", parentId: parentId || null };
+  const excl = t ? [t.id, ...descendants(p, t.id)] : [];
+  const ix = IX(p);
+  const fromItems = t ? round((ix.bud.get(t.id) || 0) - sum([t.id, ...descendants(p, t.id)].map(id => ix.tasks.get(id).estExtra || 0))) : 0;
+  openModal({
+    title: isNew ? (parentId ? "Nueva subtarea" : "Nueva tarea") : "Editar tarea", submit: isNew ? "Añadir" : "Guardar",
+    body: `${parentId && isNew ? `<p>Dentro de: <b>${esc(taskPath(p, parentId))}</b></p>` : ""}
+      <div class="row2">${field("Código / nombre", `<input name="title" value="${esc(v.title || "")}" placeholder="Ej. 01 o Alicatado" autofocus maxlength="120">`)}
+      ${field("Depende de", `<select name="parentId"><option value="">— Tarea principal —</option>${taskOptions(p, v.parentId, excl)}</select>`)}</div>
+      ${field("Descripción", `<textarea name="description" rows="2" placeholder="Qué incluye esta tarea (opcional)">${esc(v.description || "")}</textarea>`)}
+      <div class="row2">${field("Estado", `<select name="status">${selectOpts(TSTATUS, v.status)}</select>`)}${field("Prioridad", `<select name="priority">${selectOpts(PRIO, v.priority)}</select>`)}</div>
+      <div class="row3">${field("Inicio", `<input type="date" name="startDate" value="${v.startDate || ""}">`)}${field("Fecha prevista", `<input type="date" name="dueDate" value="${v.dueDate || ""}">`)}${field("Finalización", `<input type="date" name="endDate" value="${v.endDate || ""}">`)}</div>
+      ${field("Otros costes estimados (€)", `<input name="estExtra" inputmode="decimal" value="${toInput(v.estExtra)}" placeholder="Mano de obra, servicios… (opcional)">`, `El coste presupuestado suma esto y el coste previsto (precio × cantidad) de los elementos de acopio asociados.${t ? ` Desde acopio: <b>${money(fromItems)}</b>.` : ""}`)}
+      ${!isNew ? created(t.createdAt) : ""}`,
+    onSubmit(d) {
+      const title = d.title.trim(); if (!title) return "Escribe el código o nombre de la tarea.";
+      let estExtra = null; if (d.estExtra.trim()) { estExtra = parseNum(d.estExtra); if (!isFinite(estExtra) || estExtra < 0) return "Coste estimado no válido."; estExtra = round(estExtra); }
+      if (d.startDate && d.dueDate && d.dueDate < d.startDate) return "La fecha prevista no puede ser anterior al inicio.";
+      const fields = { title, description: d.description.trim(), status: d.status, priority: d.priority, parentId: d.parentId || null, startDate: d.startDate, dueDate: d.dueDate, endDate: d.endDate, estExtra, endAuto: false };
+      if (fields.status === "hecha" && !fields.endDate) { fields.endDate = today(); fields.endAuto = true; }
+      if (!Store.canWrite()) return;
+      const pp = getP(pid); if (!pp) return;
+      if (isNew) {
+        const sib = pp.tasks.filter(x => x.parentId === fields.parentId);
+        pp.tasks.push({ id: uid(), createdAt: Date.now(), order: sib.length ? Math.max(...sib.map(x => x.order)) + 1 : 0, ...fields });
+        if (fields.parentId) S.ui.collapsedT.delete(fields.parentId);
+      } else {
+        const tt = find(pp.tasks, tid); if (!tt) return "La tarea ya no existe.";
+        if (tt.parentId !== fields.parentId) { const sib = pp.tasks.filter(x => x.parentId === fields.parentId && x.id !== tid); fields.order = sib.length ? Math.max(...sib.map(x => x.order)) + 1 : 0; }
+        Object.assign(tt, fields);
+      }
+      Store.save(pid);
+    }
+  });
+}
+/* ---- Gasto ---- */
+function costModal(pid, cid) {
+  const p = getP(pid); const c = cid ? find(p.costs, cid) : null;
+  const isNew = !c; const f = costF(pid);
+  const v = c || { date: today(), taskId: f.task && f.task !== "__none" ? f.task : null };
+  const item = v.itemId ? find(p.items, v.itemId) : null;
+  const otherAcq = item ? round(itemState(p, item).acq - (v.qty || 0), 4) : 0;
+  openModal({
+    title: isNew ? "Añadir gasto" : (v.itemId ? "Editar compra" : "Editar gasto"), submit: isNew ? "Añadir" : "Guardar",
+    body: `${item ? `<p>Compra del elemento <b>${esc(item.name)}</b> de la lista de acopio.</p>` : ""}
+      ${field("Concepto", `<input name="concept" value="${esc(v.concept || "")}" placeholder="Ej. Azulejos y cemento cola" autofocus maxlength="200">`)}
+      <div class="row2 keep">${field("Fecha", `<input type="date" name="date" value="${v.date || today()}">`)}${field("Importe (€)", `<input name="amount" inputmode="decimal" value="${toInput(v.amount)}" placeholder="0,00">`)}</div>
+      ${item ? field(`Cantidad comprada (${esc(item.unit)})`, `<input name="qty" inputmode="decimal" value="${toInput(v.qty)}">`) + `<div class="calc" id="cqcalc"></div>` : ""}
+      <div class="row2">${field("Nº documento", `<input name="docNumber" value="${esc(v.docNumber || "")}" placeholder="Factura, ticket, albarán… (opcional)">`)}
+      ${field("Tarea", `<select name="taskId"><option value="">— Sin tarea —</option>${taskOptions(p, v.taskId)}</select>`)}</div>
+      ${!isNew ? created(c.createdAt) : ""}`,
+    onMount(form) {
+      if (!item) return;
+      const upd = () => {
+        const q = parseNum(form.qty.value), calc = form.querySelector("#cqcalc");
+        if (q > 0 && otherAcq + q > item.qtyNeeded + EPS) { calc.className = "calc warn"; calc.innerHTML = `<span>Superas la cantidad necesaria (${num(item.qtyNeeded)} ${esc(item.unit)}). Se actualizará a ${num(round(otherAcq + q, 4))} ${esc(item.unit)}.</span>`; }
+        else calc.innerHTML = "";
+      };
+      form.addEventListener("input", upd); upd();
+    },
+    onSubmit(d) {
+      const amount = parseNum(d.amount); if (!isFinite(amount) || amount < 0) return "Indica un importe válido.";
+      if (!d.date) return "Indica la fecha.";
+      const pp = getP(pid); if (!pp) return;
+      const it = v.itemId ? find(pp.items, v.itemId) : null;
+      const fields = { concept: d.concept.trim() || (it ? "Compra: " + it.name : "Gasto"), date: d.date, amount: round(amount), docNumber: d.docNumber.trim(), taskId: d.taskId || null };
+      let raised = null;
+      if (it) {
+        const q = parseNum(d.qty); if (!isFinite(q) || q <= 0) return "Indica una cantidad mayor que 0.";
+        fields.qty = round(q, 4); fields.unitPrice = round(amount / q, 4);
+        const other = round(itemState(pp, it).acq - (c ? c.qty || 0 : 0), 4);
+        if (other + fields.qty > it.qtyNeeded + EPS) raised = round(other + fields.qty, 4);
+      }
+      if (!Store.canWrite()) return;
+      if (isNew) pp.costs.push({ id: uid(), createdAt: Date.now(), itemId: null, ...fields });
+      else { const cc = find(pp.costs, cid); if (!cc) return "El gasto ya no existe."; Object.assign(cc, fields); }
+      if (raised != null) { it.qtyNeeded = raised; toast(`Cantidad necesaria actualizada a ${num(raised)} ${it.unit}`); }
+      Store.save(pid);
+    }
+  });
+}
+/* ---- Carpeta ---- */
+function folderModal(pid, fid, parentId) {
+  const p = getP(pid); const fo = fid ? find(p.folders, fid) : null;
+  const isNew = !fo; const v = fo || { parentId: parentId || null, hideCost: false };
+  const excl = fo ? [fo.id, ...folderDesc(p, fo.id)] : [];
+  openModal({
+    title: isNew ? "Nueva carpeta" : "Editar carpeta", submit: isNew ? "Crear" : "Guardar",
+    body: `${field("Nombre", `<input name="name" value="${esc(v.name || "")}" placeholder="Ej. Fontanería" autofocus maxlength="120">`)}
+      ${field("Ubicación", `<select name="parentId"><option value="">— Raíz de la lista —</option>${folderOptions(p, v.parentId, excl)}</select>`)}
+      <label class="switch"><input type="checkbox" name="hideCost" ${v.hideCost ? "checked" : ""}><span>Ocultar el coste acumulado de esta carpeta</span></label>`,
+    onSubmit(d) {
+      const name = d.name.trim(); if (!name) return "Escribe un nombre.";
+      if (!Store.canWrite()) return;
+      const pp = getP(pid); const fields = { name, parentId: d.parentId || null, hideCost: d.hideCost === "on" };
+      if (isNew) { pp.folders.push({ id: uid(), createdAt: Date.now(), ...fields }); if (fields.parentId) S.ui.collapsedF.delete(fields.parentId); }
+      else { const ff = find(pp.folders, fid); if (!ff) return "La carpeta ya no existe."; Object.assign(ff, fields); }
+      Store.save(pid);
+    }
+  });
+}
+/* ---- Elemento ---- */
+function itemModal(pid, iid, folderId) {
+  const p = getP(pid); const it = iid ? find(p.items, iid) : null;
+  const isNew = !it; const v = it || { qtyNeeded: 1, unit: "ud", folderId: folderId || null, estPrice: null, taskId: null, url: "" };
+  const acq = it ? itemState(p, it).acq : 0;
+  openModal({
+    title: isNew ? "Nuevo elemento" : "Editar elemento", submit: isNew ? "Añadir" : "Guardar",
+    body: `${field("Nombre", `<input name="name" value="${esc(v.name || "")}" placeholder="Ej. Tubo PVC 40 mm" autofocus maxlength="200">`)}
+      ${field("Descripción", `<input name="description" value="${esc(v.description || "")}" placeholder="Marca, medidas, dónde comprarlo… (opcional)">`)}
+      <div class="row2 keep">${field("Cantidad necesaria", `<input name="qtyNeeded" inputmode="decimal" value="${toInput(v.qtyNeeded)}">`, acq > EPS ? `Mínimo ${num(acq)} (ya comprado)` : "")}${field("Unidad", `<input name="unit" list="units" value="${esc(v.unit)}" placeholder="ud">`)}</div>
+      <div class="seg"><label><input type="radio" name="pmode" value="unit" checked><span>Precio unitario previsto</span></label><label><input type="radio" name="pmode" value="total"><span>Coste total previsto</span></label></div>
+      ${field(`<span id="epLbl">Precio unitario previsto (€)</span>`, `<input name="price" inputmode="decimal" value="${toInput(v.estPrice)}" placeholder="Opcional">`)}
+      <div class="calc" id="ecalc"></div>
+      <div class="row2">${field("Tarea asociada", `<select name="taskId"><option value="">— Sin tarea —</option>${taskOptions(p, v.taskId)}</select>`, "Se propondrá al registrar compras")}
+      ${field("Carpeta", `<select name="folderId"><option value="">— Raíz de la lista —</option>${folderOptions(p, v.folderId)}</select>`)}</div>
+      ${field("Enlace del producto", `<input name="url" type="url" inputmode="url" value="${esc(v.url || "")}" placeholder="https://… (opcional)">`)}
+      ${!isNew ? `<p class="note">Adquirido: <b>${num(acq)} ${esc(it.unit)}</b> según las compras registradas. Cambiar el precio previsto no modifica los costes reales ya registrados.</p>${created(it.createdAt)}` : ""}`,
+    onMount(form) {
+      const upd = () => {
+        const mode = form.pmode.value, q = parseNum(form.qtyNeeded.value), pr = parseNum(form.price.value);
+        form.querySelector("#epLbl").textContent = mode === "unit" ? "Precio unitario previsto (€)" : "Coste total previsto (€)";
+        const calc = form.querySelector("#ecalc");
+        if (!(q > 0) || !isFinite(pr)) { calc.innerHTML = ""; return; }
+        calc.className = "calc";
+        calc.innerHTML = mode === "unit" ? `<span>Coste previsto: <b>${money(q * pr)}</b></span><span>${num(q)} × ${money(pr)}</span>` : `<span>Precio unitario: <b>${money(pr / q)}</b> / ${esc(form.unit.value || "ud")}</span>`;
+      };
+      form.addEventListener("input", upd); form.addEventListener("change", upd); upd();
+    },
+    onSubmit(d) {
+      const name = d.name.trim(); if (!name) return "Escribe un nombre.";
+      const q = d.qtyNeeded.trim() ? parseNum(d.qtyNeeded) : 1; if (!isFinite(q) || q <= 0) return "La cantidad debe ser mayor que 0.";
+      const pp = getP(pid); const cur = it ? find(pp.items, iid) : null;
+      const a = cur ? itemState(pp, cur).acq : 0;
+      if (q < a - EPS) return `La cantidad no puede ser inferior a lo ya comprado (${num(a)} ${cur.unit}).`;
+      let estPrice = null;
+      if (d.price.trim()) { const pr = parseNum(d.price); if (!isFinite(pr) || pr < 0) return "Precio previsto no válido."; estPrice = round(d.pmode === "total" ? pr / q : pr, 4); }
+      let url = d.url.trim(); if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+      if (url) { try { new URL(url); } catch (e) { return "El enlace no es válido."; } }
+      if (!Store.canWrite()) return;
+      const fields = { name, description: d.description.trim(), qtyNeeded: round(q, 4), unit: d.unit.trim() || "ud", folderId: d.folderId || null, estPrice, taskId: d.taskId || null, url };
+      if (isNew) { pp.items.push({ id: uid(), createdAt: Date.now(), ...fields }); if (fields.folderId) S.ui.collapsedF.delete(fields.folderId); }
+      else { if (!cur) return "El elemento ya no existe."; Object.assign(cur, fields); }
+      Store.save(pid);
+    }
+  });
+}
+/* ---- Compra ---- */
+function buyModal(pid, iid) {
+  const p = getP(pid); const it = find(p.items, iid); const s = itemState(p, it);
+  const lt = S.ui.lastTask[pid];
+  const defTask = it.taskId || (lt && IX(p).tasks.has(lt) ? lt : null);
+  openModal({
+    title: "Registrar compra", submit: "Confirmar compra",
+    body: `<div class="buyinfo"><b>${esc(it.name)}</b><div class="q"><span>Necesario: <b style="display:inline">${num(it.qtyNeeded)} ${esc(it.unit)}</b></span><span>Adquirido: ${num(s.acq)}</span><span>Pendiente: ${num(s.pend)}</span>${it.estPrice != null ? `<span>Precio previsto: ${money(it.estPrice)}</span>` : ""}</div></div>
+      <div class="row2 keep">${field(`Unidades compradas (${esc(it.unit)})`, `<input name="qty" inputmode="decimal" value="${toInput(s.pend > 0 ? s.pend : 1)}" autofocus>`)}${field("Fecha", `<input type="date" name="date" value="${today()}">`)}</div>
+      <div class="seg"><label><input type="radio" name="mode" value="unit" checked><span>Precio unitario</span></label><label><input type="radio" name="mode" value="total"><span>Importe total</span></label></div>
+      ${field(`<span id="priceLbl">Precio por ${esc(it.unit)} (€)</span>`, `<input name="price" inputmode="decimal" value="${toInput(it.estPrice)}" placeholder="0,00">`)}
+      <div class="calc" id="buycalc"></div>
+      <div class="calc warn" id="buywarn"></div>
+      <div class="row2">${field("Imputar a la tarea", `<select name="taskId"><option value="">— Sin tarea —</option>${taskOptions(p, defTask)}</select>`)}
+      ${field("Nº documento", `<input name="docNumber" placeholder="Factura, ticket… (opcional)">`)}</div>`,
+    onMount(form) {
+      const upd = () => {
+        const q = parseNum(form.qty.value), pr = parseNum(form.price.value), mode = form.mode.value;
+        form.querySelector("#priceLbl").textContent = mode === "unit" ? `Precio por ${it.unit} (€)` : "Importe total de la compra (€)";
+        const calc = form.querySelector("#buycalc"), warn = form.querySelector("#buywarn");
+        warn.innerHTML = q > 0 && q > s.pend + EPS ? `<span>Compras ${num(round(q - s.pend, 4))} ${esc(it.unit)} más de lo necesario. Al confirmar, la cantidad necesaria pasará a ${num(round(s.acq + q, 4))} ${esc(it.unit)}.</span>` : "";
+        if (!(q > 0) || !isFinite(pr)) { calc.innerHTML = ""; return; }
+        const total = mode === "unit" ? q * pr : pr, unit = mode === "unit" ? pr : pr / q;
+        const left = Math.max(0, round(it.qtyNeeded - s.acq - q, 4));
+        calc.innerHTML = `<span>${mode === "unit" ? `Total: <b>${money(total)}</b>` : `Precio unitario: <b>${money(unit)}</b> / ${esc(it.unit)}`}</span><span>${left > 0 ? `Quedarán ${num(left)} pendientes` : "Quedará completo"}</span>`;
+      };
+      form.addEventListener("input", upd); form.addEventListener("change", upd); upd();
+    },
+    onSubmit(d) {
+      const q = parseNum(d.qty); if (!isFinite(q) || q <= 0) return "Indica cuántas unidades has comprado.";
+      const pr = parseNum(d.price); if (!isFinite(pr) || pr < 0) return d.mode === "unit" ? "Indica el precio unitario." : "Indica el importe total.";
+      if (!d.date) return "Indica la fecha.";
+      if (!Store.canWrite()) return;
+      const pp = getP(pid); const cur = find(pp.items, iid); if (!cur) return "El elemento ya no existe.";
+      const st = itemState(pp, cur);
+      const amount = round(d.mode === "unit" ? q * pr : pr);
+      const unitPrice = round(d.mode === "unit" ? pr : pr / q, 4);
+      pp.costs.push({ id: uid(), createdAt: Date.now(), date: d.date, amount, concept: `Compra: ${cur.name}`, docNumber: d.docNumber.trim(), taskId: d.taskId || null, itemId: cur.id, qty: round(q, 4), unitPrice });
+      let msg = `Compra registrada · ${money(amount)} añadido a costes`;
+      if (st.acq + q > cur.qtyNeeded + EPS) { cur.qtyNeeded = round(st.acq + q, 4); msg += ` · cantidad necesaria: ${num(cur.qtyNeeded)} ${cur.unit}`; }
+      S.ui.lastTask[pid] = d.taskId || null;
+      Store.save(pid);
+      toast(msg);
+    }
+  });
+}
+/* ---- Trabajo ---- */
+function parseTags(s) { return String(s || "").split(/[,;#]/).map(x => x.trim()).filter(Boolean); }
+function mergeTags(a) { const m = new Map(); a.forEach(t => { const k = norm(t); if (k && !m.has(k)) m.set(k, t); }); return [...m.values()]; }
+function workModal(pid, wid) {
+  const p = getP(pid); const w = wid ? find(p.works, wid) : null;
+  const isNew = !w; const v = w || { status: "pendiente", tags: [], taskId: null, recur: null };
+  const existing = allTags(p);
+  openModal({
+    title: isNew ? "Nuevo trabajo" : "Editar trabajo", submit: isNew ? "Añadir" : "Guardar",
+    body: `${field("Trabajo", `<input name="title" value="${esc(v.title || "")}" placeholder="Ej. Retirar escombros del patio" autofocus maxlength="160">`)}
+      ${field("Descripción", `<textarea name="description" rows="2" placeholder="Detalles (opcional)">${esc(v.description || "")}</textarea>`)}
+      <div class="row2">${field("Estado", `<select name="status">${selectOpts(WSTATUS, v.status)}</select>`)}${field("Tarea relacionada", `<select name="taskId"><option value="">— Ninguna —</option>${taskOptions(p, v.taskId)}</select>`)}</div>
+      <div class="row2 keep">${field("Fecha prevista (desde)", `<input type="date" name="startDate" value="${v.startDate || ""}">`)}${field("Hasta (opcional)", `<input type="date" name="endDate" value="${v.endDate || ""}">`)}</div>
+      <div class="field"><span>Tags</span>${existing.length ? `<div class="tagpick" id="tagpick">${existing.map(t => { const on = v.tags.some(x => norm(x) === norm(t)); return `<span class="tag ${on ? "on " + tagClass(t) : ""}" data-tag="${esc(t)}" data-cls="${tagClass(t)}">${esc(t)}</span>`; }).join("")}</div>` : ""}
+        <input name="newTags" placeholder="${existing.length ? "Nuevos tags, separados por comas" : "Ej. jardín, limpieza"}"></div>
+      <div class="row2 keep">${field("Repetir", `<select name="ru"><option value="">No se repite</option>${Object.entries(RECUR).map(([k, l]) => `<option value="${k}" ${v.recur && v.recur.u === k ? "selected" : ""}>Cada … ${l[1]}</option>`).join("")}</select>`)}${field("Cada", `<input name="rn" inputmode="numeric" value="${v.recur ? v.recur.n : 1}">`)}</div>
+      <p class="note">Al marcar como realizado un trabajo que se repite, se programa automáticamente el siguiente. Los trabajos no generan costes.</p>
+      ${!isNew ? created(w.createdAt) : ""}`,
+    onMount(form) {
+      const tp = form.querySelector("#tagpick");
+      if (tp) tp.addEventListener("click", e => { const t = e.target.closest("[data-tag]"); if (!t) return; t.classList.toggle("on"); t.classList.toggle(t.dataset.cls); });
+    },
+    onSubmit(d, form) {
+      const title = d.title.trim(); if (!title) return "Escribe el nombre del trabajo.";
+      if (d.startDate && d.endDate && d.endDate < d.startDate) return "La fecha final no puede ser anterior a la inicial.";
+      let recur = null; if (d.ru) { const n = parseInt(d.rn, 10); if (!(n > 0)) return "Indica cada cuánto se repite."; recur = { n, u: d.ru }; }
+      const picked = [...form.querySelectorAll("#tagpick .tag.on")].map(x => x.dataset.tag);
+      const tags = mergeTags([...picked, ...parseTags(d.newTags)]);
+      if (!Store.canWrite()) return;
+      const pp = getP(pid);
+      const fields = { title, description: d.description.trim(), taskId: d.taskId || null, startDate: d.startDate, endDate: d.endDate, tags, recur };
+      let ww;
+      if (isNew) { ww = { id: uid(), createdAt: Date.now(), status: "pendiente", doneDate: "", ...fields }; pp.works.push(ww); }
+      else { ww = find(pp.works, wid); if (!ww) return "El trabajo ya no existe."; Object.assign(ww, fields); }
+      setWorkStatus(pp, ww, d.status);
+      Store.save(pid);
+    }
+  });
+}
+function setWorkStatus(p, w, st) {
+  if (st === "hecho" && w.status !== "hecho") {
+    w.doneDate = today();
+    if (w.recur && !w.recurSpawned) {
+      const base = w.startDate || w.endDate ? null : today();
+      const next = {
+        ...clone(w), id: uid(), status: "pendiente", doneDate: "", recurSpawned: false, createdAt: Date.now(),
+        startDate: w.startDate ? addInterval(w.startDate, w.recur.n, w.recur.u) : (base ? addInterval(base, w.recur.n, w.recur.u) : ""),
+        endDate: w.endDate ? addInterval(w.endDate, w.recur.n, w.recur.u) : ""
+      };
+      p.works.push(next); w.recurSpawned = true;
+      toast(`Siguiente «${w.title}» programado para el ${fmtDate(next.startDate || next.endDate)}`);
+    }
+  } else if (st !== "hecho") w.doneDate = "";
+  w.status = st;
+}
+
+/* ---- Copia de seguridad ---- */
+function saveFile(filename, data, type) {
+  try {
+    const blob = new Blob([data], { type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    return true;
+  } catch (e) { toast("No se pudo descargar el archivo", true); return false; }
+}
+function exportBackup() {
+  const o = {}; Object.values(S.projects).forEach(p => o[p.id] = fullDoc(p));
+  const data = JSON.stringify({ app: "LiteProyect", version: 2, exportedAt: new Date().toISOString(), projects: o, images: S.images });
+  if (saveFile(`liteproyect-copia-${today()}.json`, data, "application/json")) toast("Copia descargada");
+}
+function exportCosts(pid) {
+  const p = getP(pid); const costs = filteredCosts(p);
+  const n = v => v == null || v === "" ? "" : String(round(v, 4)).replace(".", ",");
+  const cell = v => { v = String(v ?? ""); return /[;"\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  const rows = [["Fecha", "Concepto", "Importe (€)", "Nº documento", "Tarea", "Elemento de acopio", "Cantidad", "Unidad", "Precio unitario (€)"]];
+  costs.forEach(c => { const it = c.itemId ? find(p.items, c.itemId) : null; rows.push([fmtDate(c.date), c.concept, n(c.amount), c.docNumber, c.taskId ? taskPath(p, c.taskId) : "", it ? it.name : "", c.itemId ? n(c.qty) : "", it ? it.unit : "", c.itemId ? n(c.unitPrice) : ""]); });
+  const csv = "\ufeff" + rows.map(r => r.map(cell).join(";")).join("\r\n");
+  if (saveFile(`costes-${slugify(p.name)}.csv`, csv, "text/csv;charset=utf-8")) toast("CSV descargado");
+}
+function importBackup(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let data; try { data = JSON.parse(r.result); } catch (e) { return toast("El archivo no es una copia válida", true); }
+    const projs = data && data.projects && typeof data.projects === "object" ? data.projects : null;
+    if (!projs || data.app !== "LiteProyect") return toast("El archivo no es una copia de LiteProyect", true);
+    const ids = Object.keys(projs).filter(id => /^[a-z0-9]+$/.test(id));
+    const repl = ids.filter(id => S.projects[id]).length;
+    confirmModal("Importar copia de seguridad", `Se importarán ${plural(ids.length, "proyecto")}.${repl ? ` ${repl} ya existe${repl === 1 ? "" : "n"} y se sustituirá${repl === 1 ? "" : "n"} por la versión de la copia.` : ""}`, "Importar", () => {
+      if (!Store.canWrite()) return;
+      ids.forEach(id => { S.projects[id] = normalize(projs[id], id); Store.save(id); const img = data.images && data.images[id]; if (img && /^data:image\//.test(img)) Store.setImage(id, img); });
+      toast("Copia importada");
+    });
+  };
+  r.readAsText(file);
+}
+
+/* =========================================================
+   Navegación y acciones
+   ========================================================= */
+const TABS = ["tareas", "trabajos", "costes", "acopio"];
+function parseHash(h) {
+  const m = /^p-([a-z0-9]+)(?:-(tareas|trabajos|costes|acopio))?$/.exec(h);
+  if (!m) return { name: "home" };
+  if (m[2]) S.ui.tab[m[1]] = m[2];
+  return { name: "project", id: m[1] };
+}
+function setHash(h) { try { if (location.hash.slice(1) !== h) location.hash = h; } catch (e) { } }
+function go(h) { S.view = parseHash(h); window.scrollTo(0, 0); render(); setHash(h); }
+function route() {
+  const v = parseHash(location.hash.slice(1));
+  if (v.name === S.view.name && v.id === S.view.id) { render(); return; }
+  S.view = v; window.scrollTo(0, 0); render();
+}
+window.addEventListener("hashchange", route);
+
+function mutate(fn) { const p = P(); if (!p || !Store.canWrite()) return; if (fn(p) !== false) Store.save(p.id); }
+const ACT = {
+  home: () => go(""),
+  open: id => go("p-" + id),
+  "open-works": id => { S.ui.tab[id] = "trabajos"; go("p-" + id + "-trabajos"); },
+  filter: id => { S.filter = id; render(); },
+  tab: id => { S.ui.tab[S.view.id] = id; render(); setHash("p-" + S.view.id + (id === "tareas" ? "" : "-" + id)); },
+  "project-new": () => projectModal(null),
+  "project-edit": () => projectModal(S.view.id),
+  "project-dup": () => duplicateProject(S.view.id),
+  "project-del": () => {
+    const p = P(); const m = metrics(p);
+    confirmModal("Eliminar proyecto", `Se eliminará <b>${esc(p.name)}</b> con ${plural(p.tasks.length, "tarea")}, ${plural(p.costs.length, "gasto")} (${money(m.spent)}), ${plural(p.items.length, "elemento")} de acopio y ${plural(p.works.length, "trabajo")}. Esta acción no se puede deshacer.${p.status !== "finalizado" ? "" : "<br><br>Si solo quieres archivarlo, déjalo como finalizado: conserva toda su información."}`, "Eliminar definitivamente", () => { if (!Store.canWrite()) return; const id = p.id; go(""); Store.remove(id); toast("Proyecto eliminado"); });
+  },
+  /* tareas */
+  "task-new": () => taskModal(S.view.id, null, null),
+  "task-sub": id => taskModal(S.view.id, null, id),
+  "task-edit": id => taskModal(S.view.id, id),
+  "task-toggle": id => { const s = S.ui.collapsedT; s.has(id) ? s.delete(id) : s.add(id); render(); },
+  "task-cycle": id => mutate(p => {
+    const t = find(p.tasks, id); if (!t) return false;
+    t.status = t.status === "pendiente" ? "curso" : t.status === "curso" ? "hecha" : "pendiente";
+    if (t.status === "hecha" && !t.endDate) { t.endDate = today(); t.endAuto = true; }
+    if (t.status === "pendiente" && t.endAuto) { t.endDate = ""; t.endAuto = false; }
+    if (t.status === "curso" && !t.startDate) t.startDate = today();
+  }),
+  "task-del": id => {
+    const p = P(); const t = find(p.tasks, id); const ds = descendants(p, id); const ids = new Set([id, ...ds]);
+    const nc = p.costs.filter(c => ids.has(c.taskId)).length, ni = p.items.filter(i => ids.has(i.taskId)).length, nw = p.works.filter(w => ids.has(w.taskId)).length;
+    const extra = [nc && plural(nc, "gasto"), ni && plural(ni, "elemento") + " de acopio", nw && plural(nw, "trabajo")].filter(Boolean);
+    confirmModal("Eliminar tarea", `Se eliminará <b>${esc(t.title)}</b>${ds.length ? ` y sus ${plural(ds.length, "subtarea")}` : ""}.${extra.length ? ` Se conservarán sin tarea asociada: ${extra.join(", ")}.` : ""}`, "Eliminar", () => mutate(pp => {
+      pp.tasks = pp.tasks.filter(x => !ids.has(x.id));
+      [pp.costs, pp.items, pp.works].forEach(arr => arr.forEach(o => { if (ids.has(o.taskId)) o.taskId = null; }));
+      const f = costF(pp.id); if (ids.has(f.task)) f.task = "";
+    }));
+  },
+  /* trabajos */
+  "work-new": () => workModal(S.view.id, null),
+  "work-edit": id => workModal(S.view.id, id),
+  "work-status": id => {
+    const [pid, wid, st] = id.split("|"); const p = getP(pid); if (!p || !Store.canWrite()) return;
+    const w = find(p.works, wid); if (!w || w.status === st) return;
+    setWorkStatus(p, w, st); Store.save(pid);
+  },
+  "work-when": id => { const f = workF(S.view.id); f.when = f.when === id ? "" : id; render(); },
+  "work-tag": id => { const f = workF(S.view.id); const k = norm(id); f.tags = f.tags.some(t => norm(t) === k) ? f.tags.filter(t => norm(t) !== k) : [...f.tags, id]; render(); },
+  "works-clear": () => { S.ui.wf[S.view.id] = null; workF(S.view.id); render(); },
+  "works-alldone": () => { S.ui.allDone = true; render(); },
+  /* costes */
+  "cost-new": () => costModal(S.view.id, null),
+  "cost-edit": id => costModal(S.view.id, id),
+  "cost-del": id => {
+    const p = P(); const c = find(p.costs, id);
+    confirmModal(c.itemId ? "Anular compra" : "Eliminar gasto", `Se eliminará <b>${esc(c.concept)}</b> (${money(c.amount)}).${c.itemId ? " Las unidades de esta compra volverán a contar como pendientes en la lista de acopio." : ""}`, "Eliminar", () => mutate(pp => { pp.costs = pp.costs.filter(x => x.id !== id); }));
+  },
+  "cost-task-set": id => { costF(S.view.id).task = id; render(); },
+  "costs-clear": () => { S.ui.cf[S.view.id] = null; costF(S.view.id); render(); },
+  "costs-export": () => exportCosts(S.view.id),
+  /* acopio */
+  "folder-new": id => folderModal(S.view.id, null, id || null),
+  "folder-edit": id => folderModal(S.view.id, id),
+  "folder-toggle": id => { const s = S.ui.collapsedF; s.has(id) ? s.delete(id) : s.add(id); render(); },
+  "folder-eye": id => mutate(p => { const f = find(p.folders, id); if (!f) return false; f.hideCost = !f.hideCost; }),
+  "folder-del": id => {
+    const p = P(); const f = find(p.folders, id);
+    const nItems = p.items.filter(i => i.folderId === id).length, nSub = p.folders.filter(x => x.parentId === id).length;
+    confirmModal("Eliminar carpeta", `Se eliminará la carpeta <b>${esc(f.name)}</b>.${nItems + nSub ? ` Su contenido (${plural(nItems, "elemento")}${nSub ? `, ${plural(nSub, "subcarpeta")}` : ""}) pasará a la carpeta superior.` : ""}`, "Eliminar", () => mutate(pp => {
+      const ff = find(pp.folders, id); if (!ff) return false;
+      pp.items.forEach(i => { if (i.folderId === id) i.folderId = ff.parentId; });
+      pp.folders.forEach(x => { if (x.parentId === id) x.parentId = ff.parentId; });
+      pp.folders = pp.folders.filter(x => x.id !== id);
+    }));
+  },
+  "item-new": id => itemModal(S.view.id, null, id || null),
+  "item-edit": id => itemModal(S.view.id, id),
+  "item-buy": id => buyModal(S.view.id, id),
+  "item-hist": id => { const s = S.ui.hist; s.has(id) ? s.delete(id) : s.add(id); render(); },
+  "item-del": id => {
+    const p = P(); const it = find(p.items, id);
+    if (itemState(p, it).acq > EPS) return infoModal("No se puede eliminar", `<b>${esc(it.name)}</b> tiene compras registradas. Para eliminarlo, anula antes sus compras desde el historial del elemento.`);
+    confirmModal("Eliminar elemento", `Se eliminará <b>${esc(it.name)}</b> de la lista.`, "Eliminar", () => mutate(pp => { pp.items = pp.items.filter(x => x.id !== id); }));
+  },
+  /* copia */
+  "backup-export": () => exportBackup(),
+  "backup-import": () => { const f = $("#importFile"); f.value = ""; f.click(); }
+};
+const CHG = {
+  pstatus: el => mutate(p => { p.status = el.value; if (p.status === "finalizado" && !p.endDate) p.endDate = today(); }),
+  "hide-done": el => { S.ui.hideDone = el.checked; render(); },
+  "only-pending": el => { S.ui.onlyPending = el.checked; render(); },
+  "cost-task": el => { costF(S.view.id).task = el.value; render(); },
+  "cost-origin": el => { costF(S.view.id).origin = el.value; render(); },
+  "cost-from": el => { costF(S.view.id).from = el.value; render(); },
+  "cost-to": el => { costF(S.view.id).to = el.value; render(); },
+  "works-from": el => { workF(S.view.id).from = el.value; render(); },
+  "works-to": el => { workF(S.view.id).to = el.value; render(); }
+};
+const INP = {
+  "home-q": el => { S.homeQ = el.value; },
+  "works-q": el => { workF(S.view.id).q = el.value; },
+  "costs-q": el => { costF(S.view.id).q = el.value; },
+  "acopio-q": el => { S.ui.aq[S.view.id] = el.value; }
+};
+/* Altas rápidas */
+function quickAdd(kind, text) {
+  text = text.trim(); if (!text) return;
+  mutate(p => {
+    if (kind === "task") {
+      const roots = p.tasks.filter(t => !t.parentId);
+      p.tasks.push({ id: uid(), createdAt: Date.now(), order: roots.length ? Math.max(...roots.map(x => x.order)) + 1 : 0, title: text.slice(0, 120), description: "", status: "pendiente", priority: "media", parentId: null, startDate: "", dueDate: "", endDate: "", estExtra: null });
+    } else if (kind === "work") {
+      const tags = (text.match(/#([^\s#,]+)/g) || []).map(t => t.slice(1));
+      const title = text.replace(/#[^\s#,]+/g, "").replace(/\s+/g, " ").trim() || text;
+      p.works.push({ id: uid(), createdAt: Date.now(), title: title.slice(0, 160), description: "", status: "pendiente", tags: mergeTags(tags), taskId: null, startDate: "", endDate: "", doneDate: "", recur: null });
+    } else if (kind === "item") {
+      let name = text, qty = 1, unit = "ud";
+      const m = /^(.*?)[,;]\s*([\d.,]+)\s*([^\d\s].*)?$/.exec(text);
+      if (m && parseNum(m[2]) > 0) { name = m[1].trim(); qty = parseNum(m[2]); unit = (m[3] || "ud").trim(); }
+      p.items.push({ id: uid(), createdAt: Date.now(), name: name.slice(0, 200), description: "", qtyNeeded: round(qty, 4), unit, folderId: null, estPrice: null, taskId: null, url: "" });
+    }
+  });
+}
+
+document.addEventListener("click", e => {
+  if (e.target.closest("#modal-root")) return;
+  if (drag && drag.justEnded) return;
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  if (el.disabled) return;
+  const fn = ACT[el.dataset.act]; if (!fn) return;
+  e.preventDefault(); fn(el.dataset.id);
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "importFile") { const f = e.target.files[0]; if (f) importBackup(f); return; }
+  if (e.target.closest("#modal-root")) return;
+  const el = e.target.closest("[data-chg]"); if (!el) return;
+  const fn = CHG[el.dataset.chg]; if (fn) fn(el);
+});
+document.addEventListener("input", e => {
+  if (e.target.closest("#modal-root")) return;
+  const el = e.target.closest("[data-inp]"); if (!el) return;
+  const fn = INP[el.dataset.inp]; if (fn) { fn(el); render(); }
+});
+document.addEventListener("keydown", e => {
+  const el = e.target;
+  if (e.key === "Enter" && el.dataset && el.dataset.quick && !e.isComposing) {
+    e.preventDefault(); const v = el.value; el.value = ""; quickAdd(el.dataset.quick, v);
+  }
+});
+
+/* =========================================================
+   Arrastrar tareas (ratón y táctil, con pointer events)
+   ========================================================= */
+let drag = null;
+document.addEventListener("pointerdown", e => {
+  const h = e.target.closest("[data-drag]"); if (!h || (e.button && e.button !== 0)) return;
+  const p = P(); if (!p) return;
+  const table = h.closest(".ttable"); if (!table) return;
+  e.preventDefault();
+  const id = h.dataset.drag;
+  const sub = new Set([id, ...descendants(p, id)]);
+  const rows = [...table.querySelectorAll(".trow[data-id]")];
+  rows.forEach(r => { if (sub.has(r.dataset.id)) r.classList.add("dragging"); });
+  drag = { id, pid: p.id, sub, table, lastRow: rows[rows.length - 1], rows: rows.filter(r => !sub.has(r.dataset.id)), ind: table.querySelector(".drop-ind"), target: null, pos: null, over: null };
+  try { h.setPointerCapture(e.pointerId); } catch (ex) { }
+  document.body.classList.add("is-dragging");
+});
+document.addEventListener("pointermove", e => {
+  if (!drag || drag.justEnded) return;
+  e.preventDefault();
+  const y = e.clientY;
+  if (y < 70) window.scrollBy(0, -14); else if (y > window.innerHeight - 70) window.scrollBy(0, 14);
+  if (drag.over) { drag.over.classList.remove("drop-in"); drag.over = null; }
+  drag.ind.style.display = "none"; drag.target = null;
+  if (!drag.rows.length) return;
+  const last = drag.rows[drag.rows.length - 1].getBoundingClientRect();
+  if (y > last.bottom) { drag.target = "__end"; drag.pos = "end"; drag.ind.style.top = (drag.lastRow.offsetTop + drag.lastRow.offsetHeight) + "px"; drag.ind.style.display = "block"; return; }
+  let r = drag.rows.find(x => { const b = x.getBoundingClientRect(); return y >= b.top && y <= b.bottom; });
+  if (!r) { const first = drag.rows[0]; if (y < first.getBoundingClientRect().top) r = first; else return; }
+  const b = r.getBoundingClientRect(); const rel = (y - b.top) / b.height;
+  drag.target = r.dataset.id;
+  if (rel < 0.3) { drag.pos = "before"; drag.ind.style.top = r.offsetTop + "px"; drag.ind.style.display = "block"; }
+  else if (rel > 0.7) { drag.pos = "after"; drag.ind.style.top = (r.offsetTop + r.offsetHeight) + "px"; drag.ind.style.display = "block"; }
+  else { drag.pos = "inside"; r.classList.add("drop-in"); drag.over = r; }
+}, { passive: false });
+function endDrag(cancel) {
+  if (!drag || drag.justEnded) return;
+  const d = drag; d.justEnded = true;
+  document.body.classList.remove("is-dragging");
+  setTimeout(() => { if (drag === d) drag = null; }, 0);
+  if (cancel || !d.target) { render(); return; }
+  const p = getP(d.pid);
+  if (p && Store.canWrite() && moveTask(p, d.id, d.target, d.pos)) Store.save(p.id); else render();
+}
+document.addEventListener("pointerup", () => endDrag(false));
+document.addEventListener("pointercancel", () => endDrag(true));
+function moveTask(p, id, targetId, pos) {
+  const t = find(p.tasks, id); if (!t) return false;
+  let parent, index;
+  if (targetId === "__end") { parent = null; index = Infinity; }
+  else {
+    const tg = find(p.tasks, targetId); if (!tg || tg.id === id) return false;
+    const visKids = kidsOf(p, tg.id).length && !S.ui.collapsedT.has(tg.id);
+    if (pos === "inside") { parent = tg.id; index = Infinity; }
+    else if (pos === "after" && visKids) { parent = tg.id; index = 0; }
+    else { parent = tg.parentId; const sib = kidsOf(p, parent).filter(x => x.id !== id); const i = sib.findIndex(x => x.id === tg.id); index = pos === "before" ? i : i + 1; }
+  }
+  if (parent && (parent === id || descendants(p, id).includes(parent))) return false;
+  const sib = kidsOf(p, parent).filter(x => x.id !== id);
+  sib.splice(Math.min(index, sib.length), 0, t);
+  t.parentId = parent; sib.forEach((x, i) => x.order = i);
+  if (parent) S.ui.collapsedT.delete(parent);
+  return true;
+}
+
+/* =========================================================
+   Arranque
+   ========================================================= */
+/* ---------- Cuenta (Google) ---------- */
+function authMsg(e) {
+  const c = e && e.code;
+  if (c === "auth/unauthorized-domain") return `Este dominio (${location.hostname}) no está autorizado en Firebase. Añádelo en Authentication › Configuración › Dominios autorizados (paso 5 de la guía).`;
+  if (c === "auth/operation-not-allowed") return "El inicio de sesión con Google no está activado en Firebase (paso 2 de la guía).";
+  if (c === "auth/network-request-failed") return "Sin conexión: necesitas internet para iniciar sesión la primera vez.";
+  return "No se pudo iniciar sesión (" + (c || "error") + ").";
+}
+async function signIn() {
+  if (!FB) return;
+  const { au, auth } = FB;
+  const prov = new au.GoogleAuthProvider();
+  prov.setCustomParameters({ prompt: "select_account" });
+  try { await au.signInWithPopup(auth, prov); }
+  catch (e) {
+    if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment", "auth/cancelled-popup-request"].includes(e.code)) {
+      try { await au.signInWithRedirect(auth, prov); } catch (e2) { toast(authMsg(e2), true); }
+    } else if (e.code !== "auth/popup-closed-by-user") toast(authMsg(e), true);
+  }
+}
+function accountModal() {
+  const u = S.user || {};
+  const pending = Store.local.size > 0 || Store.pendingColl.size > 0;
+  openModal({
+    title: "Tu cuenta", submit: "Cerrar sesión", danger: true,
+    body: `<div class="buyinfo"><b>${esc(u.name || "Cuenta de Google")}</b><div class="q"><span>${esc(u.email || "")}</span></div></div>
+      <p>Tus datos se guardan en este dispositivo y se sincronizan con tu cuenta cuando hay conexión. En otro móvil u ordenador, inicia sesión con la misma cuenta para tener todo.</p>
+      <p class="note">Estado: ${!navigator.onLine ? "sin conexión" + (pending ? ", con cambios pendientes de subir" : "") : pending ? "sincronizando cambios…" : "todo sincronizado"}.</p>
+      ${pending ? `<p class="over" style="font-size:13px">Hay cambios sin subir: si cierras sesión ahora, se perderán. Conéctate a internet y espera a que ponga «Sincronizado».</p>` : ""}`,
+    onSubmit() {
+      (async () => {
+        try { Store.stop(); await FB.au.signOut(FB.auth); try { await FB.fs.terminate(FB.db); await FB.fs.clearIndexedDbPersistence(FB.db); } catch (e) { } }
+        finally { location.reload(); }
+      })();
+    }
+  });
+}
+ACT["sign-in"] = () => signIn();
+ACT.account = () => accountModal();
+ACT.reload = () => location.reload();
+
+/* =========================================================
+   Arranque
+   ========================================================= */
+(async function boot() {
+  S.view = parseHash(location.hash.slice(1));
+  S.auth = "loading"; S.canDownload = true;
+  render();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => { });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
+  let cfg = null;
+  try { cfg = (await import("./firebase-config.js")).firebaseConfig; } catch (e) { cfg = null; }
+  if (!cfg || !cfg.apiKey || !cfg.projectId || /PEGA|TU_/.test(cfg.apiKey)) { S.auth = "setup"; return render(); }
+  try {
+    const [appM, au, fs] = await Promise.all([
+      import(FIREBASE_SDK + "firebase-app.js"), import(FIREBASE_SDK + "firebase-auth.js"), import(FIREBASE_SDK + "firebase-firestore.js")
+    ]);
+    const app = appM.initializeApp(cfg);
+    let db;
+    try { db = fs.initializeFirestore(app, { localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() }) }); }
+    catch (e) { db = fs.getFirestore(app); }
+    const auth = au.getAuth(app);
+    auth.languageCode = "es";
+    FB = { app, db, auth, fs, au };
+    au.getRedirectResult(auth).catch(e => toast(authMsg(e), true));
+    au.onAuthStateChanged(auth, user => {
+      if (user) {
+        S.user = { email: user.email, name: user.displayName, photo: user.photoURL };
+        S.auth = "in";
+        if (Store.uid !== user.uid) Store.start(user.uid);
+      } else { S.auth = "out"; S.user = null; Store.stop(); S.mode = "pending"; }
+      render();
+    });
+  } catch (e) {
+    console.error(e);
+    S.auth = "fatal";
+    S.fatal = navigator.onLine ? "No se pudo cargar Firebase. Comprueba la configuración o inténtalo más tarde." : "Sin conexión. Abre la app una vez con internet para que quede instalada y funcione sin conexión.";
+    render();
+  }
+})();
+</script>
+</body>
+</html>
